@@ -3,7 +3,10 @@ import os
 import sys
 import Text as tx
 
-def trata_arquivo(pasta_mae):
+def trata_arquivo(pasta_mae) -> list:
+    lista_formatos = ["mp3", "ogg", "flac","wav"]
+    lista_nao_suportados = []
+    
     if not os.path.isdir(pasta_mae):
         print(f"Erro: A pasta '{pasta_mae}' não foi encontrada.")
         return
@@ -12,6 +15,11 @@ def trata_arquivo(pasta_mae):
         for arquivo in arquivos:
             caminho_completo = os.path.join(raiz, arquivo)
             formato = tx.ao.reconhece_formato(arquivo)
+            
+            if formato not in lista_formatos:
+                print(f"Formato do arquivo '{arquivo}' não suportado.")
+                lista_nao_suportados.append(arquivo)
+                continue
             
             if formato != "wav":
                 try:
@@ -36,11 +44,12 @@ def trata_arquivo(pasta_mae):
                     print(f"Novo arquivo WAV '{novo_nome}' foi criado.")
                 except Exception as e:
                     print(f"Erro ao processar o arquivo '{arquivo}': {e}")
+    return lista_nao_suportados
 
                 
         
 
-def acessa_arquivos(pasta_mae,pasta_destino):
+def acessa_arquivos(pasta_mae,pasta_destino,arquivos_n_sup):
     # Verifica se a pasta existe
     if not os.path.isdir(pasta_mae):
         print(f"Erro: A pasta '{pasta_mae}' não foi encontrada.")
@@ -52,10 +61,18 @@ def acessa_arquivos(pasta_mae,pasta_destino):
             # Procedimento do que fazer com os arquivos
             print(f"Arquivo: {arquivo}")
             
+            if arquivo in arquivos_n_sup:
+                continue
+            
             caminho_arquivo = os.path.join(raiz, arquivo)
             
             # Tratar o nome do arquivo
             nome_arquivo_texto = caminho_arquivo[:caminho_arquivo.rfind('.')] + "_Transcrição.txt"
+            
+            
+            # Subdividir audios maiores de 3 minutos
+            # Subdividir audios maiores de 3 minutos
+            # Subdividir audios maiores de 3 minutos
             
             # Mexer no arquivo original (Audio)
             texto = str(tx.texto(caminho_arquivo, caminho_arquivo))
@@ -84,7 +101,7 @@ if __name__ == "__main__":
         pasta_destino = sys.argv[2]
         
         
-        trata_arquivo(pasta_origem)
+        arquivos_n_sup = trata_arquivo(pasta_origem)
 
         # Chama a função para renomear os arquivos
-        acessa_arquivos(pasta_origem, pasta_destino)
+        acessa_arquivos(pasta_origem, pasta_destino,arquivos_n_sup)
