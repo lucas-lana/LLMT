@@ -1,5 +1,6 @@
 from pydub import AudioSegment
 from io import BytesIO
+import Text as tx
 import wave
 
 def convert_to_wav(input_audio: BytesIO, format: str) -> BytesIO:
@@ -130,3 +131,52 @@ def get_audio_duration(audio_file: str) -> float:
         rate = wf.getframerate()
         duration = frames / float(rate)
     return duration
+
+
+
+
+def transcrever_audio(caminho_arquivo: str, arquivo: str) -> str:
+    vosk_min_text = "Vosk Simple Model: \n"
+    vosk_max_text = "Vosk Complete Model: \n"
+    speech_text = "Speech Recognition: \n"
+    
+    # Convertendo o áudio para um formato compatível com o Vosk (BytesIO)
+    audio = convert_to_vosk(caminho_arquivo, reconhece_formato(arquivo))
+    
+    # Converte BytesIO para AudioSegment
+    audio_segment = AudioSegment.from_file(audio)
+    duracao = len(audio_segment)
+    
+    max_duracao = 3 * 60 * 1000  # Máximo de 3 minutos por parte
+    qtd_partes = (duracao // max_duracao) + (1 if (duracao % max_duracao) > 0 else 0)
+    
+    for parte in range(qtd_partes):
+        lista_partes = []
+        
+        inicio = parte * max_duracao
+        fim = min((parte + 1) * max_duracao, duracao)
+        
+        # Obtém a parte do áudio como um AudioSegment
+        parte_atual = audio_segment[inicio:fim]
+        
+        # Converte a parte atual para BytesIO antes de passar para a função de transcrição
+        parte_atual_io = BytesIO()
+        parte_atual.export(parte_atual_io, format="wav")
+        parte_atual_io.seek(0)
+        
+        # Passa a parte para a função de transcrição
+        lista_partes = tx.texto(parte_atual_io)
+        vosk_min_text += str(lista_partes[0])
+        vosk_max_text += str(lista_partes[1])
+        speech_text += str(lista_partes[2])
+        
+        print(vosk_min_text)
+        print("\n")
+        print(vosk_max_text)
+        print("\n")
+        print(speech_text)
+    
+    texto = "Testes do arquivo: " + arquivo + "\n" + "Duração: " 
+    texto += f"{get_audio_duration(caminho_arquivo):.2f}\n"+ '-'*50 + "\n" + vosk_min_text + "\n" + vosk_max_text + "\n" +speech_text 
+    
+    return texto

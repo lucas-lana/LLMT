@@ -1,7 +1,7 @@
 import io
 import os
 import sys
-import Text as tx
+import Audio_Operations as ao
 
 def trata_arquivo(pasta_mae) -> list:
     lista_formatos = ["mp3", "ogg", "flac","wav"]
@@ -14,7 +14,7 @@ def trata_arquivo(pasta_mae) -> list:
     for raiz, subpastas, arquivos in os.walk(pasta_mae):
         for arquivo in arquivos:
             caminho_completo = os.path.join(raiz, arquivo)
-            formato = tx.ao.reconhece_formato(arquivo)
+            formato = ao.reconhece_formato(arquivo)
             
             if formato not in lista_formatos:
                 print(f"Formato do arquivo '{arquivo}' não suportado.")
@@ -24,7 +24,7 @@ def trata_arquivo(pasta_mae) -> list:
             if formato != "wav":
                 try:
                     # Converte o arquivo para WAV
-                    audio = tx.ao.convert_to_wav(caminho_completo, formato)
+                    audio = ao.convert_to_wav(caminho_completo, formato)
                     
                     # Verifica se 'audio' é um objeto BytesIO, caso sim, obtém os bytes
                     if isinstance(audio, io.BytesIO):
@@ -70,14 +70,9 @@ def acessa_arquivos(pasta_mae,pasta_destino,arquivos_n_sup):
             nome_arquivo_texto = caminho_arquivo[:caminho_arquivo.rfind('.')] + "_Transcrição.txt"
             
             
-            # Subdividir audios maiores de 3 minutos
-            # Subdividir audios maiores de 3 minutos
-            # Subdividir audios maiores de 3 minutos
-            
-            # Mexer no arquivo original (Audio)
-            texto = str(tx.texto(caminho_arquivo, caminho_arquivo))
-            
-            
+            # Trasncreve o áudio
+            texto = ao.transcrever_audio(caminho_arquivo, arquivo)
+                  
             # Crie a pasta de destino se ela não existir
             if not os.path.exists(pasta_destino):
                 os.makedirs(pasta_destino)
