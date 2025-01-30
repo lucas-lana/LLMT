@@ -16,15 +16,16 @@ def measure_time(func, *args, **kwargs):
 def texto(sub_audio: any) -> list:
     
     vosk_min_result, vosk_min_time = measure_time(tc.vosk_rec_min, sub_audio)
-    vosk_min_text = f"{vosk_min_result} (Tempo: {vosk_min_time:.2f} segundos)\n\n"
+    vosk_min_text = f"{vosk_min_result}\n\n"
     
     vosk_result, vosk_time = measure_time(tc.vosk_rec, sub_audio)
-    vosk_max_text = f"{vosk_result} (Tempo: {vosk_time:.2f} segundos)\n\n"
+    vosk_max_text = f"{vosk_result}\n\n"
     
     speech_result, speech_time = measure_time(tc.speech_rec, sub_audio)
-    speech_text = f"{speech_result} (Tempo: {speech_time:.2f} segundos)\n\n"
+    speech_text = f"{speech_result}\n\n"
     
-    return vosk_min_text, vosk_max_text, speech_text
     
+    return vosk_min_text, vosk_max_text, speech_text,vosk_min_time,vosk_time,speech_time
+        
     ##arquivo = caminho[:caminho.rfind('.')]
     ##create_file(texto, arquivo)

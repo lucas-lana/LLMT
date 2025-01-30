@@ -93,19 +93,16 @@ def convert_to_16khz(input_audio: BytesIO, format: str) -> BytesIO:
     
     return output_audio
 
-def convert_to_vosk(input_audio: BytesIO, format: str) -> BytesIO:
+def convert_to_vosk(input_audio: BytesIO) -> BytesIO:
     """
     Converte um áudio para um formato compatível com o Vosk (16 kHz, mono, 16 bits).
     
     :param input_audio: Objeto BytesIO contendo o áudio de entrada.
-    :param format: Formato do áudio de entrada (e.g., "mp3", "wav", "flac").
     :return: Objeto BytesIO contendo o áudio convertido para o formato compatível com o Vosk.
     """
-    # Converte o áudio para WAV
-    wav_audio = convert_to_wav(input_audio, format)
     
     # Converte o áudio para 16 bits
-    audio_16bit = convert_to_16bit(wav_audio, "wav")
+    audio_16bit = convert_to_16bit(input_audio, "wav")
     
     # Converte o áudio para mono
     mono_audio = convert_audio_channels(audio_16bit, "wav", 1)
@@ -139,9 +136,12 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str) -> str:
     vosk_min_text = "Vosk Simple Model: \n"
     vosk_max_text = "Vosk Complete Model: \n"
     speech_text = "Speech Recognition: \n"
+    vosk_min_time = 0
+    vosk_max_time = 0
+    speech_time = 0
     
     # Convertendo o áudio para um formato compatível com o Vosk (BytesIO)
-    audio = convert_to_vosk(caminho_arquivo, reconhece_formato(arquivo))
+    audio = convert_to_vosk(caminho_arquivo)
     
     # Converte BytesIO para AudioSegment
     audio_segment = AudioSegment.from_file(audio)
@@ -169,6 +169,9 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str) -> str:
         vosk_min_text += str(lista_partes[0])
         vosk_max_text += str(lista_partes[1])
         speech_text += str(lista_partes[2])
+        vosk_min_time += float(lista_partes[3]) 
+        vosk_max_time += float(lista_partes[4]) 
+        speech_time += float(lista_partes[5])
         
         print(vosk_min_text)
         print("\n")
@@ -177,6 +180,10 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str) -> str:
         print(speech_text)
     
     texto = "Testes do arquivo: " + arquivo + "\n" + "Duração: " 
-    texto += f"{get_audio_duration(caminho_arquivo):.2f}\n"+ '-'*50 + "\n" + vosk_min_text + "\n" + vosk_max_text + "\n" +speech_text 
+    texto += f"{get_audio_duration(caminho_arquivo):.2f}\n"+ '-'*50 + "\n" 
+    
+    
+    texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n" +speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+    
     
     return texto

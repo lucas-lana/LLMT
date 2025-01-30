@@ -3,11 +3,10 @@ import json
 
 from vosk import Model, KaldiRecognizer
 import speech_recognition as sr
-import Audio_Operations as ao
 from io import BytesIO
 
 def vosk_rec_min(audio_file: BytesIO) -> str:
-    MODEL_PATH =  "/home/Lucas/Documentos/Modelos/Vosk/vosk-model-small-pt-0.3"
+    MODEL_PATH =  "Modelos/Vosk/vosk-model-small-pt-0.3"
 
     # Carregar o modelo
     model = Model(MODEL_PATH)
@@ -44,7 +43,7 @@ def vosk_rec_min(audio_file: BytesIO) -> str:
 
 def vosk_rec(audio_file: BytesIO) -> str:
     # Baixe o modelo para português em https://alphacephei.com/vosk/models
-    MODEL_PATH =  "/home/Lucas/Documentos/Modelos/Vosk/vosk-model-pt-fb-v0.1.1-20220516_2113"
+    MODEL_PATH =  "Modelos/Vosk/vosk-model-pt-fb-v0.1.1-20220516_2113"
 
     # Carregar o modelo
     model = Model(MODEL_PATH)
