@@ -132,7 +132,7 @@ def get_audio_duration(audio_file: str) -> float:
 
 
 
-def transcrever_audio(caminho_arquivo: str, arquivo: str) -> str:
+def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> str:
     vosk_min_text = "Vosk Simple Model: \n"
     vosk_max_text = "Vosk Complete Model: \n"
     speech_text = "Speech Recognition: \n"
@@ -165,25 +165,76 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str) -> str:
         parte_atual_io.seek(0)
         
         # Passa a parte para a função de transcrição
-        lista_partes = tx.texto(parte_atual_io)
-        vosk_min_text += str(lista_partes[0])
-        vosk_max_text += str(lista_partes[1])
-        speech_text += str(lista_partes[2])
-        vosk_min_time += float(lista_partes[3]) 
-        vosk_max_time += float(lista_partes[4]) 
-        speech_time += float(lista_partes[5])
+        lista_partes = tx.texto(parte_atual_io,escolha_modelos)
+        if len(lista_partes) == 4:
+            if escolha_modelos == "3":
+                vosk_min_text += str(lista_partes[0])
+                vosk_max_text += str(lista_partes[1])
+                vosk_min_time += float(lista_partes[2]) 
+                vosk_max_time += float(lista_partes[3])
+            
+            elif escolha_modelos == "5":
+                vosk_min_text += str(lista_partes[0])
+                speech_text += str(lista_partes[1])
+                vosk_min_time += float(lista_partes[2])
+                speech_time += float(lista_partes[3])
+                
+            else:
+                vosk_max_text += str(lista_partes[0])
+                speech_text += str(lista_partes[1])
+                vosk_max_time += float(lista_partes[2])
+                speech_time += float(lista_partes[3])
+                
+        elif len(lista_partes) == 2:
+            if escolha_modelos == "1":
+                vosk_min_text += str(lista_partes[0])
+                vosk_min_time += float(lista_partes[1])
+                
+            elif escolha_modelos == "2":
+                vosk_max_text += str(lista_partes[0])
+                vosk_max_time += float(lista_partes[1])
+                
+            elif escolha_modelos == "4":
+                speech_text += str(lista_partes[0])
+                speech_time += float(lista_partes[1])
         
-        print(vosk_min_text)
-        print("\n")
-        print(vosk_max_text)
-        print("\n")
-        print(speech_text)
+        else:
+            vosk_min_text += str(lista_partes[0])
+            vosk_max_text += str(lista_partes[1])
+            speech_text += str(lista_partes[2])
+            vosk_min_time += float(lista_partes[3]) 
+            vosk_max_time += float(lista_partes[4]) 
+            speech_time += float(lista_partes[5])
+        
+        #print(vosk_min_text)
+        #print("\n")
+        #print(vosk_max_text)
+        #print("\n")
+        #print(speech_text)
     
     texto = "Testes do arquivo: " + arquivo + "\n" + "Duração: " 
     texto += f"{get_audio_duration(caminho_arquivo):.2f}\n"+ '-'*50 + "\n" 
     
-    
-    texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n" +speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+    if escolha_modelos == "1":
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n"
+        
+    elif escolha_modelos == "2":
+        texto += vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n"
+        
+    elif escolha_modelos == "4":
+        texto += speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+        
+    elif escolha_modelos == "3":
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n"
+        
+    elif escolha_modelos == "5":
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n" + speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+        
+    elif escolha_modelos == "6":
+        texto += vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n" + speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+        
+    else:
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n" +speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
     
     
     return texto

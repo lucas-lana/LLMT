@@ -48,7 +48,7 @@ def trata_arquivo(pasta_mae) -> list:
                 
         
 
-def acessa_arquivos(pasta_mae,pasta_destino,arquivos_n_sup):
+def acessa_arquivos(pasta_mae,pasta_destino,arquivos_n_sup,escolha_modelos):
     # Verifica se a pasta existe
     if not os.path.isdir(pasta_mae):
         print(f"Erro: A pasta '{pasta_mae}' não foi encontrada.")
@@ -70,7 +70,7 @@ def acessa_arquivos(pasta_mae,pasta_destino,arquivos_n_sup):
             
             
             # Trasncreve o áudio
-            texto = ao.transcrever_audio(caminho_arquivo, arquivo)
+            texto = ao.transcrever_audio(caminho_arquivo, arquivo,escolha_modelos)
                   
             # Crie a pasta de destino se ela não existir
             if not os.path.exists(pasta_destino):
