@@ -225,16 +225,16 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> st
         texto += speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
         
     elif escolha_modelos == "3":
-        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n"
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n"
         
     elif escolha_modelos == "5":
-        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n" + speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n\n" + speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
         
     elif escolha_modelos == "6":
-        texto += vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n" + speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+        texto += vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n\n" + speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
         
     else:
-        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n" +speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n\n" +speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
     
     
     return texto
