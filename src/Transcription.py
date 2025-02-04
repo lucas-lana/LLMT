@@ -1,20 +1,22 @@
 import wave
 import json
 
-import speech_recognition as sr
 from vosk import Model, KaldiRecognizer
+import speech_recognition as sr
+from io import BytesIO
 
-import Audio_Operations as ao
-
-def vosk_rec_min(caminho:str) -> str:
-    MODEL_PATH =  "/home/Lucas/Documentos/Modelos/Vosk/vosk-model-small-pt-0.3"
-    audio_file = ao.convert_to_vosk(caminho, "wav")
+def vosk_rec_min(audio_file: BytesIO) -> str:
+    MODEL_PATH =  "Modelos/Vosk/vosk-model-small-pt-0.3"
 
     # Carregar o modelo
     model = Model(MODEL_PATH)
     
     text = ""
-    # Abrir o arquivo de áudio
+    
+    # Rewind the BytesIO object to ensure we're reading from the beginning
+    audio_file.seek(0)
+    
+    # Abrir o arquivo de áudio usando o BytesIO
     with wave.open(audio_file, "rb") as wf:
         if wf.getnchannels() != 1 or wf.getsampwidth() != 2 or wf.getframerate() != 16000:
             raise ValueError("O áudio deve estar em mono, 16-bit e 16 kHz.")
@@ -38,15 +40,17 @@ def vosk_rec_min(caminho:str) -> str:
     return text
 
 
-def vosk_rec(caminho:str) -> str:
+
+def vosk_rec(audio_file: BytesIO) -> str:
     # Baixe o modelo para português em https://alphacephei.com/vosk/models
-    MODEL_PATH =  "/home/Lucas/Documentos/Modelos/Vosk/vosk-model-pt-fb-v0.1.1-20220516_2113"
-    audio_file = ao.convert_to_vosk(caminho, "wav")
+    MODEL_PATH =  "Modelos/Vosk/vosk-model-pt-fb-v0.1.1-20220516_2113"
 
     # Carregar o modelo
     model = Model(MODEL_PATH)
 
     text = ""
+    audio_file.seek(0)
+    
     # Abrir o arquivo de áudio
     with wave.open(audio_file, "rb") as wf:
         if wf.getnchannels() != 1 or wf.getsampwidth() != 2 or wf.getframerate() != 16000:
@@ -71,14 +75,13 @@ def vosk_rec(caminho:str) -> str:
     return text
 
 
-def speech_rec(caminho: str) -> str:
+def speech_rec(audio: BytesIO) -> str:
 
     recognizer = sr.Recognizer()
-    
-    caminho = ao.convert_to_wav(caminho, ao.reconhece_formato(caminho))
+    audio.seek(0)
 
     # Carregar o áudio
-    with sr.AudioFile(caminho) as source:
+    with sr.AudioFile(audio) as source:
         audio = recognizer.record(source)
 
     # Converter áudio em texto

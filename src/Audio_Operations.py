@@ -1,5 +1,6 @@
 from pydub import AudioSegment
 from io import BytesIO
+import Text as tx
 import wave
 
 def convert_to_wav(input_audio: BytesIO, format: str) -> BytesIO:
@@ -92,19 +93,16 @@ def convert_to_16khz(input_audio: BytesIO, format: str) -> BytesIO:
     
     return output_audio
 
-def convert_to_vosk(input_audio: BytesIO, format: str) -> BytesIO:
+def convert_to_vosk(input_audio: BytesIO) -> BytesIO:
     """
     Converte um áudio para um formato compatível com o Vosk (16 kHz, mono, 16 bits).
     
     :param input_audio: Objeto BytesIO contendo o áudio de entrada.
-    :param format: Formato do áudio de entrada (e.g., "mp3", "wav", "flac").
     :return: Objeto BytesIO contendo o áudio convertido para o formato compatível com o Vosk.
     """
-    # Converte o áudio para WAV
-    wav_audio = convert_to_wav(input_audio, format)
     
     # Converte o áudio para 16 bits
-    audio_16bit = convert_to_16bit(wav_audio, "wav")
+    audio_16bit = convert_to_16bit(input_audio, "wav")
     
     # Converte o áudio para mono
     mono_audio = convert_audio_channels(audio_16bit, "wav", 1)
@@ -130,3 +128,113 @@ def get_audio_duration(audio_file: str) -> float:
         rate = wf.getframerate()
         duration = frames / float(rate)
     return duration
+
+
+
+
+def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> str:
+    vosk_min_text = "Vosk Simple Model: \n"
+    vosk_max_text = "Vosk Complete Model: \n"
+    speech_text = "Speech Recognition: \n"
+    vosk_min_time = 0
+    vosk_max_time = 0
+    speech_time = 0
+    
+    # Convertendo o áudio para um formato compatível com o Vosk (BytesIO)
+    audio = convert_to_vosk(caminho_arquivo)
+    
+    # Converte BytesIO para AudioSegment
+    audio_segment = AudioSegment.from_file(audio)
+    duracao = len(audio_segment)
+    
+    max_duracao = 3 * 60 * 1000  # Máximo de 3 minutos por parte
+    qtd_partes = (duracao // max_duracao) + (1 if (duracao % max_duracao) > 0 else 0)
+    
+    for parte in range(qtd_partes):
+        lista_partes = []
+        
+        inicio = parte * max_duracao
+        fim = min((parte + 1) * max_duracao, duracao)
+        
+        # Obtém a parte do áudio como um AudioSegment
+        parte_atual = audio_segment[inicio:fim]
+        
+        # Converte a parte atual para BytesIO antes de passar para a função de transcrição
+        parte_atual_io = BytesIO()
+        parte_atual.export(parte_atual_io, format="wav")
+        parte_atual_io.seek(0)
+        
+        # Passa a parte para a função de transcrição
+        lista_partes = tx.texto(parte_atual_io,escolha_modelos)
+        if len(lista_partes) == 4:
+            if escolha_modelos == "3":
+                vosk_min_text += str(lista_partes[0])
+                vosk_max_text += str(lista_partes[1])
+                vosk_min_time += float(lista_partes[2]) 
+                vosk_max_time += float(lista_partes[3])
+            
+            elif escolha_modelos == "5":
+                vosk_min_text += str(lista_partes[0])
+                speech_text += str(lista_partes[1])
+                vosk_min_time += float(lista_partes[2])
+                speech_time += float(lista_partes[3])
+                
+            else:
+                vosk_max_text += str(lista_partes[0])
+                speech_text += str(lista_partes[1])
+                vosk_max_time += float(lista_partes[2])
+                speech_time += float(lista_partes[3])
+                
+        elif len(lista_partes) == 2:
+            if escolha_modelos == "1":
+                vosk_min_text += str(lista_partes[0])
+                vosk_min_time += float(lista_partes[1])
+                
+            elif escolha_modelos == "2":
+                vosk_max_text += str(lista_partes[0])
+                vosk_max_time += float(lista_partes[1])
+                
+            elif escolha_modelos == "4":
+                speech_text += str(lista_partes[0])
+                speech_time += float(lista_partes[1])
+        
+        else:
+            vosk_min_text += str(lista_partes[0])
+            vosk_max_text += str(lista_partes[1])
+            speech_text += str(lista_partes[2])
+            vosk_min_time += float(lista_partes[3]) 
+            vosk_max_time += float(lista_partes[4]) 
+            speech_time += float(lista_partes[5])
+        
+        #print(vosk_min_text)
+        #print("\n")
+        #print(vosk_max_text)
+        #print("\n")
+        #print(speech_text)
+    
+    texto = "Testes do arquivo: " + arquivo + "\n" + "Duração: " 
+    texto += f"{get_audio_duration(caminho_arquivo):.2f}\n"+ '-'*50 + "\n" 
+    
+    if escolha_modelos == "1":
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n"
+        
+    elif escolha_modelos == "2":
+        texto += vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n"
+        
+    elif escolha_modelos == "4":
+        texto += speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+        
+    elif escolha_modelos == "3":
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n"
+        
+    elif escolha_modelos == "5":
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n\n" + speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+        
+    elif escolha_modelos == "6":
+        texto += vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n\n" + speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+        
+    else:
+        texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n\n" +speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
+    
+    
+    return texto

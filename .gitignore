@@ -2,3 +2,7 @@
 __pycache__
 lib/
 rst/
+src/Modelos
+Install_Linux.sh
+Install_Windows.ps1
+requirements.txt

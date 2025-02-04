@@ -1,7 +1,6 @@
 import io
 import os
-import sys
-import Text as tx
+import Audio_Operations as ao
 
 def trata_arquivo(pasta_mae) -> list:
     lista_formatos = ["mp3", "ogg", "flac","wav"]
@@ -14,7 +13,7 @@ def trata_arquivo(pasta_mae) -> list:
     for raiz, subpastas, arquivos in os.walk(pasta_mae):
         for arquivo in arquivos:
             caminho_completo = os.path.join(raiz, arquivo)
-            formato = tx.ao.reconhece_formato(arquivo)
+            formato = ao.reconhece_formato(arquivo)
             
             if formato not in lista_formatos:
                 print(f"Formato do arquivo '{arquivo}' não suportado.")
@@ -24,7 +23,7 @@ def trata_arquivo(pasta_mae) -> list:
             if formato != "wav":
                 try:
                     # Converte o arquivo para WAV
-                    audio = tx.ao.convert_to_wav(caminho_completo, formato)
+                    audio = ao.convert_to_wav(caminho_completo, formato)
                     
                     # Verifica se 'audio' é um objeto BytesIO, caso sim, obtém os bytes
                     if isinstance(audio, io.BytesIO):
@@ -49,7 +48,7 @@ def trata_arquivo(pasta_mae) -> list:
                 
         
 
-def acessa_arquivos(pasta_mae,pasta_destino,arquivos_n_sup):
+def acessa_arquivos(pasta_mae,pasta_destino,arquivos_n_sup,escolha_modelos):
     # Verifica se a pasta existe
     if not os.path.isdir(pasta_mae):
         print(f"Erro: A pasta '{pasta_mae}' não foi encontrada.")
@@ -70,14 +69,9 @@ def acessa_arquivos(pasta_mae,pasta_destino,arquivos_n_sup):
             nome_arquivo_texto = caminho_arquivo[:caminho_arquivo.rfind('.')] + "_Transcrição.txt"
             
             
-            # Subdividir audios maiores de 3 minutos
-            # Subdividir audios maiores de 3 minutos
-            # Subdividir audios maiores de 3 minutos
-            
-            # Mexer no arquivo original (Audio)
-            texto = str(tx.texto(caminho_arquivo, caminho_arquivo))
-            
-            
+            # Trasncreve o áudio
+            texto = ao.transcrever_audio(caminho_arquivo, arquivo,escolha_modelos)
+                  
             # Crie a pasta de destino se ela não existir
             if not os.path.exists(pasta_destino):
                 os.makedirs(pasta_destino)
@@ -88,20 +82,3 @@ def acessa_arquivos(pasta_mae,pasta_destino,arquivos_n_sup):
             with open(caminho_arquivo_texto_destino, 'w') as f:
                 f.write(texto)
     
-            
-
-if __name__ == "__main__":
-    # Verifica se os argumentos necessários foram passados
-    if len(sys.argv) < 3:
-        print("Uso: python3 script.py <caminho_da_pasta_mae> <caminho_da_pasta_destino>")
-        print("O caminho da pasta deve ser entre aspas duplas.")
-    else:
-        # Captura os argumentos da linha de comando
-        pasta_origem = sys.argv[1]
-        pasta_destino = sys.argv[2]
-        
-        
-        arquivos_n_sup = trata_arquivo(pasta_origem)
-
-        # Chama a função para renomear os arquivos
-        acessa_arquivos(pasta_origem, pasta_destino,arquivos_n_sup)
