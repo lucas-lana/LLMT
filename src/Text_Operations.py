@@ -1,5 +1,5 @@
 import time
-import Transcription as tc
+import Models_Recognition as mr
 
 def create_file(texto: str, nome_arquivo: str):
     nome_arquivo += ".txt"
@@ -16,55 +16,55 @@ def measure_time(func, *args, **kwargs):
 def texto(sub_audio: any,escolha_modelos) -> list:
         
     if escolha_modelos == "1":
-        vosk_min_result, vosk_min_time = measure_time(tc.vosk_rec_min, sub_audio)
+        vosk_min_result, vosk_min_time = measure_time(mr.vosk_rec_min, sub_audio)
         vosk_min_text = f"{separa_linha(vosk_min_result)}\n"
         return vosk_min_text, vosk_min_time
     
     elif escolha_modelos == "2":
-        vosk_result, vosk_time = measure_time(tc.vosk_rec, sub_audio)
+        vosk_result, vosk_time = measure_time(mr.vosk_rec, sub_audio)
         vosk_max_text = f"{separa_linha(vosk_result)}\n"
         return vosk_max_text, vosk_time
     
     elif escolha_modelos == "4":
-        speech_result, speech_time = measure_time(tc.speech_rec, sub_audio)
+        speech_result, speech_time = measure_time(mr.speech_rec, sub_audio)
         speech_text = f"{separa_linha(speech_result)}\n"
         return speech_text, speech_time
     
     elif escolha_modelos == "3":
-        vosk_min_result, vosk_min_time = measure_time(tc.vosk_rec_min, sub_audio)
+        vosk_min_result, vosk_min_time = measure_time(mr.vosk_rec_min, sub_audio)
         vosk_min_text = f"{separa_linha(vosk_min_result)}\n"
 
-        vosk_result, vosk_time = measure_time(tc.vosk_rec, sub_audio)
+        vosk_result, vosk_time = measure_time(mr.vosk_rec, sub_audio)
         vosk_max_text = f"{separa_linha(vosk_result)}\n"
         
         return vosk_min_text, vosk_max_text, vosk_min_time,vosk_time
     
     elif escolha_modelos == "5":
-        vosk_min_result, vosk_min_time = measure_time(tc.vosk_rec_min, sub_audio)
+        vosk_min_result, vosk_min_time = measure_time(mr.vosk_rec_min, sub_audio)
         vosk_min_text = f"{separa_linha(vosk_min_result)}\n"
 
-        speech_result, speech_time = measure_time(tc.speech_rec, sub_audio)
+        speech_result, speech_time = measure_time(mr.speech_rec, sub_audio)
         speech_text = f"{separa_linha(speech_result)}\n"
         
         return vosk_min_text, speech_text, vosk_min_time,speech_time
     
     elif escolha_modelos == "6":
-        vosk_result, vosk_time = measure_time(tc.vosk_rec, sub_audio)
+        vosk_result, vosk_time = measure_time(mr.vosk_rec, sub_audio)
         vosk_max_text = f"{separa_linha(vosk_result)}\n"
 
-        speech_result, speech_time = measure_time(tc.speech_rec, sub_audio)
+        speech_result, speech_time = measure_time(mr.speech_rec, sub_audio)
         speech_text = f"{separa_linha(speech_result)}\n"
         
         return vosk_max_text, speech_text, vosk_time,speech_time
     
     else :
-        vosk_min_result, vosk_min_time = measure_time(tc.vosk_rec_min, sub_audio)
+        vosk_min_result, vosk_min_time = measure_time(mr.vosk_rec_min, sub_audio)
         vosk_min_text = f"{separa_linha(vosk_min_result)}\n"
 
-        vosk_result, vosk_time = measure_time(tc.vosk_rec, sub_audio)
+        vosk_result, vosk_time = measure_time(mr.vosk_rec, sub_audio)
         vosk_max_text = f"{separa_linha(vosk_result)}\n"
 
-        speech_result, speech_time = measure_time(tc.speech_rec, sub_audio)
+        speech_result, speech_time = measure_time(mr.speech_rec, sub_audio)
         speech_text = f"{separa_linha(speech_result)}\n"
     
         return vosk_min_text, vosk_max_text, speech_text,vosk_min_time,vosk_time,speech_time        

@@ -1,6 +1,6 @@
 from pydub import AudioSegment
 from io import BytesIO
-import Text as tx
+import Text_Operations as tx
 import wave
 
 def convert_to_wav(input_audio: BytesIO, format: str) -> BytesIO:
