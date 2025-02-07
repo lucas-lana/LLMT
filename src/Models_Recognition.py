@@ -6,7 +6,7 @@ import speech_recognition as sr
 from io import BytesIO
 
 def vosk_rec_min(audio_file: BytesIO) -> str:
-    MODEL_PATH =  "Modelos/Vosk/vosk-model-small-pt-0.3"
+    MODEL_PATH = "Modelos/Vosk/vosk-model-small-pt-0.3"
 
     # Carregar o modelo
     model = Model(MODEL_PATH)
