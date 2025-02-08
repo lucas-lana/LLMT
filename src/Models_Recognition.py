@@ -3,6 +3,7 @@ import json
 
 from vosk import Model, KaldiRecognizer
 import speech_recognition as sr
+import File_Operations as fo
 from io import BytesIO
 
 def vosk_rec_min(audio_file: BytesIO) -> str:
@@ -76,21 +77,28 @@ def vosk_rec(audio_file: BytesIO) -> str:
 
 
 def speech_rec(audio: BytesIO) -> str:
+    
+    print("\n\nNo speech_rec")
+
+    if not fo.check_internet_connection():
+        return "\n\nErro: Conexão com a Internet interrompida\n\n"
 
     recognizer = sr.Recognizer()
     audio.seek(0)
+    text = ""
 
-    # Carregar o áudio
-    with sr.AudioFile(audio) as source:
-        audio = recognizer.record(source)
-
-    # Converter áudio em texto
     try:
-        text = recognizer.recognize_google(audio,language = "pt-BR")
-        print("Texto reconhecido:", text)
+        with sr.AudioFile(audio) as source:
+            audio_data = recognizer.record(source)
+
+        text = recognizer.recognize_google(audio_data, language="pt-BR")
+
     except sr.UnknownValueError:
-        print("Não foi possível entender o áudio")
+        text = "Erro: Áudio não compreendido"
     except sr.RequestError as e:
-        print(f"Erro ao acessar o serviço: {e}")
-    
+        if "internet connection" in str(e).lower() or "network" in str(e).lower():
+            text = "Erro: Conexão com a Internet perdida durante o reconhecimento"
+        else:
+            text = f"Erro ao acessar o serviço: {e}"
+
     return text

@@ -1,6 +1,16 @@
 import io
 import os
+import sys
+import requests
 import Audio_Operations as ao
+
+
+def check_internet_connection(url='http://www.google.com/', timeout=5):
+    try:
+        response = requests.get(url, timeout=timeout)
+        return True
+    except (requests.ConnectionError, requests.Timeout):
+        return False
 
 def trata_arquivo(pasta_mae) -> list:
     lista_formatos = ["mp3", "ogg", "flac","wav"]
@@ -65,9 +75,29 @@ def acessa_arquivos(pasta_mae,pasta_destino,arquivos_n_sup,escolha_modelos):
             
             caminho_arquivo = os.path.join(raiz, arquivo)
             
+            if ((escolha_modelos == "0" or escolha_modelos == "7" or escolha_modelos == "4" or escolha_modelos == "5" or escolha_modelos == "6") and check_internet_connection() == False):
+                print("Erro: Não é possível utilizar o modelo Speech sem conexão com a internet.")
+                print("Trascrevendo o arquivo '" + arquivo +  "' sem o modelo Speech.")
+        
+                if escolha_modelos == "4":
+                    print("Escolhido apenas o modelo Speech.")
+                    print("Parando a execução do programa.")
+                    sys.exit()
+
+                elif escolha_modelos == "5":
+                    print("Executando apenas com o modelo Vosk mínimo")
+                    escolha_modelos = "1"
+
+                elif escolha_modelos == "6":
+                    print("Executando apenas com o modelo Vosk máximo")
+                    escolha_modelos = "2"
+
+                else:
+                    print("Executando modelos Vosk.")
+                    escolha_modelos = "3"
+            
             # Tratar o nome do arquivo
             nome_arquivo_texto = caminho_arquivo[:caminho_arquivo.rfind('.')] + "_Transcrição.txt"
-            
             
             # Trasncreve o áudio
             texto = ao.transcrever_audio(caminho_arquivo, arquivo,escolha_modelos)

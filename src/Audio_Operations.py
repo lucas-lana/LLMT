@@ -212,7 +212,10 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> st
         #print("\n")
         #print(speech_text)
     
-    texto = "Testes do arquivo: " + arquivo + "\n" + "Duração: " 
+    Prompt = "A partir apenas  das transcrições geradas pelos modelos, combine as trascrições afim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:" 
+    
+    
+    texto = Prompt+"\n\n\nTestes do arquivo: " + arquivo + "\n" + "Duração: " 
     texto += f"{get_audio_duration(caminho_arquivo):.2f}\n"+ '-'*50 + "\n" 
     
     if escolha_modelos == "1":

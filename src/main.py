@@ -3,43 +3,8 @@ import requests
 import File_Operations as fo
 import Graphic_Interface as gi
 
-
-def check_internet_connection(url='http://www.google.com/', timeout=5):
-    try:
-        response = requests.get(url, timeout=timeout)
-        return True
-    except (requests.ConnectionError, requests.Timeout):
-        return False
-
-# Exemplo de uso
-if check_internet_connection():
-    print("Conexão com a internet estabelecida.")
-else:
-    print("Sem conexão com a internet.")
-
 def start(pasta_origem,pasta_destino,escolha_modelos):
     arquivos_n_sup = fo.trata_arquivo(pasta_origem)
-
-    if ((escolha_modelos == "0" or escolha_modelos == "7" or escolha_modelos == "4" or escolha_modelos == "5" or escolha_modelos == "6") and check_internet_connection() == False):
-        print("Erro: Não é possível utilizar o modelo Speech sem conexão com a internet.")
-        print("Rodando modelos sem Speech.")
-        if escolha_modelos == "4":
-            print("Escolhido apenas o modelo Speech.")
-            print("Parando a execução do programa.")
-            sys.exit()
-
-        elif escolha_modelos == "5":
-            print("Executando apenas com o modelo Vosk mínimo")
-            escolha_modelos = "1"
-
-        elif escolha_modelos == "6":
-            print("Executando apenas com o modelo Vosk máximo")
-            escolha_modelos = "2"
-
-        else:
-            print("Executando modelos Vosk.")
-            escolha_modelos = "3"
-
 
     # Chama a função para renomear os arquivos
     fo.acessa_arquivos(pasta_origem, pasta_destino,arquivos_n_sup,escolha_modelos)
