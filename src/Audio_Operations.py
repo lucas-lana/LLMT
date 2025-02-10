@@ -129,7 +129,9 @@ def get_audio_duration(audio_file: str) -> float:
         duration = frames / float(rate)
     return duration
 
-
+def get_duration_audio(file_path: str) -> float:
+    audio = AudioSegment.from_file(file_path)
+    return len(audio) / 1000  # Converte de milissegundos para segundos
 
 
 def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> str:

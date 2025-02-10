@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QCheckBox, QLabel, QLineEdit, QPushButton, QFileDialog, QProgressBar
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QThread, Signal, QTimer
 import main as mn  # Importa o módulo com a função de transcrição
 
 class TranscriptionWorker(QThread):
@@ -10,11 +10,12 @@ class TranscriptionWorker(QThread):
     finished = Signal()  # Sinal emitido quando a tarefa é concluída
     canceled = Signal()  # Sinal emitido quando a tarefa é cancelada
 
-    def __init__(self, folder1_path, folder2_path, modelos):
+    def __init__(self, folder1_path, folder2_path, modelos, arquivos_n_sup):
         super().__init__()
         self.folder1_path = folder1_path
         self.folder2_path = folder2_path
         self.modelos = modelos
+        self.arquivos_n_sup = arquivos_n_sup
 
     def run(self):
         # Executa a função de transcrição do módulo 'main'
@@ -22,10 +23,9 @@ class TranscriptionWorker(QThread):
         print(f"Modelos selecionados: {self.modelos}")
         print(f"Pasta 1: {self.folder1_path}")
         print(f"Pasta 2: {self.folder2_path}")
-        
         try:
             # Chama a função de transcrição do módulo 'main'
-            mn.start(self.folder1_path, self.folder2_path, self.modelos)
+            mn.fo.acessa_arquivos(self.folder1_path, self.folder2_path, self.arquivos_n_sup, self.modelos)
             print("Transcrição concluída!")
             self.finished.emit()  # Emite o sinal de conclusão
         except Exception as e:
@@ -51,11 +51,9 @@ class CheckBoxWindow(QWidget):
         self.checkbox1 = QCheckBox("Simple Vosk")
         self.checkbox2 = QCheckBox("Complete Vosk")
         self.checkbox3 = QCheckBox("Speech Recognition")
-        
         self.checkbox1.setChecked(True)
         self.checkbox2.setChecked(True)
         self.checkbox3.setChecked(True)
-        
         # Conectar os checkboxes a uma função que atualiza o label e verifica o botão
         self.checkbox1.stateChanged.connect(self.check_button_state)
         self.checkbox2.stateChanged.connect(self.check_button_state)
@@ -78,10 +76,14 @@ class CheckBoxWindow(QWidget):
         layout.addWidget(self.folder1_line_edit)
         layout.addWidget(self.folder2_button)
         layout.addWidget(self.folder2_line_edit)
+        # Label para exibir o tempo de processamento estimado
+        self.time_label = QLabel("Tempo de processamento estimado: -")
+        layout.addWidget(self.time_label)
         # Barra de progresso
         self.progress_bar = QProgressBar()
         self.progress_bar.setMinimum(0)
-        self.progress_bar.setMaximum(0)  # Indeterminada inicialmente
+        self.progress_bar.setMaximum(100)  # Definido como 100% inicialmente
+        self.progress_bar.setValue(0)
         self.progress_bar.hide()  # Inicialmente oculta
         layout.addWidget(self.progress_bar)
         # Label de status
@@ -96,6 +98,9 @@ class CheckBoxWindow(QWidget):
         self.setLayout(layout)
         # Chamar check_button_state para verificar o estado inicial do botão
         self.check_button_state()
+        # Timer para decrementar o tempo restante
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_time_remaining)
 
     def update_selection(self):
         """Atualiza o label com base nas opções selecionadas."""
@@ -129,6 +134,27 @@ class CheckBoxWindow(QWidget):
             bool(self.folder1_line_edit.text()) and
             bool(self.folder2_line_edit.text())
         )
+        if at_least_one_checkbox_checked and bool(self.folder1_line_edit.text()):
+            self.arquivos_n_sup, tempo_processamento_total = mn.fo.trata_arquivo(self.folder1_line_edit.text())
+            multiplicador = 0
+            if self.checkbox1.isChecked():
+                multiplicador += 0.30
+            if self.checkbox2.isChecked():
+                multiplicador += 0.20
+            if self.checkbox3.isChecked():
+                if mn.fo.check_internet_connection() == True:
+                    multiplicador += 0.46
+            tempo_processamento_total *= multiplicador
+            if tempo_processamento_total >= 60:
+                self.time_label.setText(f"Tempo de processamento estimado: {tempo_processamento_total/60:.2f} minutos")
+            elif tempo_processamento_total >= 3600:
+                self.time_label.setText(f"Tempo de processamento estimado: {tempo_processamento_total/3600:.2f} horas")
+            else:
+                self.time_label.setText(f"Tempo de processamento estimado: {tempo_processamento_total:.2f} segundos")
+        else:
+            self.arquivos_n_sup = None
+            self.time_label.setText("Tempo de processamento estimado: ---")
+            self.generate_button.setEnabled(False)
         self.generate_button.setEnabled(at_least_one_checkbox_checked and both_folders_selected)
 
     def get_selected_data(self):
@@ -173,14 +199,57 @@ class CheckBoxWindow(QWidget):
         self.checkbox2.setEnabled(False)
         self.checkbox3.setEnabled(False)
         # Inicia a thread de transcrição
-        self.worker = TranscriptionWorker(folder1_path, folder2_path, str(modelos))
+        self.worker = TranscriptionWorker(folder1_path, folder2_path, str(modelos), self.arquivos_n_sup)
         self.worker.finished.connect(self.on_transcription_finished)
         self.worker.canceled.connect(self.on_transcription_canceled)
         self.worker.start()
+        # Inicia o timer para decrementar o tempo restante
+        self.total_time = self.get_estimated_time()
+        self.time_remaining = self.total_time
+        self.progress_bar.setMaximum(self.total_time)
+        self.update_time_label()
+        self.timer.start(1000)
+
+    def get_estimated_time(self):
+        """Obtém o tempo de processamento estimado em segundos."""
+        text = self.time_label.text()
+        if "minutos" in text:
+            return float(text.split(": ")[1].split(" ")[0]) * 60
+        elif "horas" in text:
+            return float(text.split(": ")[1].split(" ")[0]) * 3600
+        else:
+            return float(text.split(": ")[1].split(" ")[0])
+
+    def update_time_remaining(self):
+        """Decrementa o tempo restante e atualiza a label."""
+        if self.time_remaining > 0:
+            self.time_remaining -= 1
+            self.update_time_label()
+            self.progress_bar.setValue(self.total_time - self.time_remaining)
+        else:
+            self.timer.stop()
+
+    def update_time_label(self):
+        """Atualiza a label de tempo restante."""
+        if self.time_remaining >= 60:
+            minutes = self.time_remaining // 60
+            seconds = self.time_remaining % 60
+            self.time_label.setText(f"Tempo de processamento restante: {minutes:.0f} minutos {seconds:.0f} segundos")
+        elif self.time_remaining >= 3600:
+            hours = self.time_remaining // 3600
+            minutes = (self.time_remaining % 3600) // 60
+            seconds = (self.time_remaining % 3600) % 60
+            self.time_label.setText(f"Tempo de processamento restante: {hours:.0f} horas {minutes:.0f} minutos {seconds:.0f} segundos")
+        elif self.time_remaining <= 0:
+            self.time_label.setText("Tempo de processamento restante: Concluindo...")
+        else:
+            self.time_label.setText(f"Tempo de processamento restante: {self.time_remaining:.0f} segundos")
 
     def on_transcription_finished(self):
         """Ação a ser tomada quando a transcrição é concluída."""
-        self.progress_bar.hide()
+        self.timer.stop()
+        self.check_button_state()
+        self.progress_bar.setValue(self.total_time)
         self.status_label.setText("Status: Transcrição concluída! Escolha novas pastas e modelos.")
         self.generate_button.setEnabled(True)
         self.folder1_button.setEnabled(True)
@@ -191,6 +260,8 @@ class CheckBoxWindow(QWidget):
 
     def on_transcription_canceled(self):
         """Ação a ser tomada quando a transcrição é cancelada."""
+        self.timer.stop()
+        self.progress_bar.setValue(0)
         self.progress_bar.hide()
         self.status_label.setText("Status: Transcrição cancelada!")
         self.generate_button.setEnabled(True)

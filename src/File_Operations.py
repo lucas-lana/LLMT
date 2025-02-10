@@ -11,10 +11,13 @@ def check_internet_connection(url='http://www.google.com/', timeout=5):
         return True
     except (requests.ConnectionError, requests.Timeout):
         return False
+    
 
-def trata_arquivo(pasta_mae) -> list:
+def trata_arquivo(pasta_mae) :
     lista_formatos = ["mp3", "ogg", "flac","wav"]
     lista_nao_suportados = []
+    tempo_processamento = 0
+    tempo_processamento_total = 0
     
     if not os.path.isdir(pasta_mae):
         print(f"Erro: A pasta '{pasta_mae}' não foi encontrada.")
@@ -29,6 +32,9 @@ def trata_arquivo(pasta_mae) -> list:
                 print(f"Formato do arquivo '{arquivo}' não suportado.")
                 lista_nao_suportados.append(arquivo)
                 continue
+            
+            tempo_processamento = ao.get_duration_audio(caminho_completo)
+            print(f"Tempo de duração do {arquivo}: {tempo_processamento}")
             
             if formato != "wav":
                 try:
@@ -53,8 +59,12 @@ def trata_arquivo(pasta_mae) -> list:
                     print(f"Novo arquivo WAV '{novo_nome}' foi criado.")
                 except Exception as e:
                     print(f"Erro ao processar o arquivo '{arquivo}': {e}")
-    return lista_nao_suportados
-
+            
+            
+            tempo_processamento_total += tempo_processamento
+        print(f"Tempo de processamento total: {tempo_processamento_total}")        
+                    
+    return lista_nao_suportados,tempo_processamento_total
                 
         
 

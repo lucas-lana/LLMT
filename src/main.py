@@ -1,13 +1,6 @@
 import sys
-import requests
 import File_Operations as fo
 import Graphic_Interface as gi
-
-def start(pasta_origem,pasta_destino,escolha_modelos):
-    arquivos_n_sup = fo.trata_arquivo(pasta_origem)
-
-    # Chama a função para renomear os arquivos
-    fo.acessa_arquivos(pasta_origem, pasta_destino,arquivos_n_sup,escolha_modelos)
 
 
 if __name__ == "__main__":
@@ -48,4 +41,5 @@ if __name__ == "__main__":
             print("O caminho da pasta deve ser entre aspas duplas.")
             sys.exit()
         
-        start(pasta_origem,pasta_destino,escolha_modelos)
+        arquivos_n_sup,tempo_processamento_total = fo.trata_arquivo(pasta_origem)
+        fo.acessa_arquivos(pasta_origem,pasta_destino,arquivos_n_sup,escolha_modelos)
