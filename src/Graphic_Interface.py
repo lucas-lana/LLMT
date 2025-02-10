@@ -118,7 +118,9 @@ class CheckBoxWindow(QWidget):
 
     def select_folder(self, line_edit):
         """Abre o diálogo de seleção de pasta e atualiza o campo correspondente."""
-        folder = QFileDialog.getExistingDirectory(self, "Selecione uma Pasta")
+        # Obtém o diretório inicial (Pasta Inicial)
+        initial_dir = mn.fo.os.path.expanduser("~")
+        folder = QFileDialog.getExistingDirectory(self, "Selecione uma Pasta", initial_dir)
         if folder:  # Se o usuário selecionou uma pasta
             line_edit.setText(folder)
             self.check_button_state()  # Verifica o estado do botão após selecionar a pasta
@@ -146,9 +148,9 @@ class CheckBoxWindow(QWidget):
                     multiplicador += 0.46
             tempo_processamento_total *= multiplicador
             if tempo_processamento_total >= 60:
-                self.time_label.setText(f"Tempo de processamento estimado: {tempo_processamento_total/60:.2f} minutos")
+                self.time_label.setText(f"Tempo de processamento estimado: {tempo_processamento_total / 60:.2f} minutos")
             elif tempo_processamento_total >= 3600:
-                self.time_label.setText(f"Tempo de processamento estimado: {tempo_processamento_total/3600:.2f} horas")
+                self.time_label.setText(f"Tempo de processamento estimado: {tempo_processamento_total / 3600:.2f} horas")
             else:
                 self.time_label.setText(f"Tempo de processamento estimado: {tempo_processamento_total:.2f} segundos")
         else:

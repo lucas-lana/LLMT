@@ -1,27 +1,26 @@
-import sys
 import File_Operations as fo
 import Graphic_Interface as gi
 
 
 if __name__ == "__main__":
     # Verifica se os argumentos necessários foram passados
-    if len(sys.argv) == 1:
+    if len(fo.sys.argv) == 1:
         gi.interface()
     
     else:
         
-        if len(sys.argv) < 3:
+        if len(fo.sys.argv) < 3:
             print("Uso: python3 script.py <caminho_da_pasta_mae> <caminho_da_pasta_destino>")
             print("O caminho da pasta deve ser entre aspas duplas.")
 
-        elif len(sys.argv) == 3 or len(sys.argv) == 4:
+        elif len(fo.sys.argv) == 3 or len(fo.sys.argv) == 4:
             # Captura os argumentos da linha de comando
-            pasta_origem = sys.argv[1]
-            pasta_destino = sys.argv[2]
+            pasta_origem = fo.sys.argv[1]
+            pasta_destino = fo.sys.argv[2]
 
 
-            if len(sys.argv) == 4:
-                escolha_modelos = sys.argv[3]
+            if len(fo.sys.argv) == 4:
+                escolha_modelos = fo.sys.argv[3]
             else:
                 escolha_modelos = "0"
 
@@ -39,7 +38,7 @@ if __name__ == "__main__":
             print("Erro: Foram passados argumentos demais.")
             print("Uso: python3 script.py <caminho_da_pasta_mae> <caminho_da_pasta_destino>")
             print("O caminho da pasta deve ser entre aspas duplas.")
-            sys.exit()
+            fo.sys.exit()
         
         arquivos_n_sup,tempo_processamento_total = fo.trata_arquivo(pasta_origem)
         fo.acessa_arquivos(pasta_origem,pasta_destino,arquivos_n_sup,escolha_modelos)

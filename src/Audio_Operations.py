@@ -1,7 +1,6 @@
 from pydub import AudioSegment
 from io import BytesIO
 import Text_Operations as tx
-import wave
 
 def convert_to_wav(input_audio: BytesIO, format: str) -> BytesIO:
     """
@@ -123,7 +122,7 @@ def reconhece_formato(caminho: str) -> str:
     return partes[-1]
 
 def get_audio_duration(audio_file: str) -> float:
-    with wave.open(audio_file, "rb") as wf:
+    with tx.mr.wave.open(audio_file, "rb") as wf:
         frames = wf.getnframes()
         rate = wf.getframerate()
         duration = frames / float(rate)
