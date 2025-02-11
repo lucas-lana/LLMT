@@ -116,13 +116,12 @@ class CheckBoxWindow(QWidget):
         else:
             self.result_label.setText("Nenhuma opção selecionada.")
 
-    def select_folder(self,line_edit):
+    def select_folder(self, line_edit):
         initial_dir = mn.fo.os.path.expanduser("~")
-        folder = QFileDialog.getExistingDirectory(self,"Selecione uma Pasta",initial_dir)
+        folder = QFileDialog.getExistingDirectory(self, "Selecione uma Pasta", initial_dir)
         if folder:
             line_edit.setText(folder)
-            self.check_button_state()           
-    
+            self.check_button_state()
 
     def check_button_state(self):
         """Verifica se o botão 'Gerar Transcrição' deve ser habilitado."""
@@ -154,7 +153,6 @@ class CheckBoxWindow(QWidget):
         else:
             self.arquivos_n_sup = None
             self.time_label.setText("Tempo de processamento estimado: ---")
-            self.generate_button.setEnabled(False)
         self.generate_button.setEnabled(at_least_one_checkbox_checked and both_folders_selected)
 
     def get_selected_data(self):
