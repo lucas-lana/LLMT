@@ -15,6 +15,7 @@ def check_internet_connection(url='http://www.google.com/', timeout=5):
 
 def trata_arquivo(pasta_mae) :
     lista_formatos = ["mp3", "ogg", "flac","wav"]
+    #lista_formatos_videos = ["mp4", "avi", "mov", "mkv"]
     lista_nao_suportados = []
     tempo_processamento = 0
     tempo_processamento_total = 0
@@ -28,10 +29,16 @@ def trata_arquivo(pasta_mae) :
             caminho_completo = os.path.join(raiz, arquivo)
             formato = ao.reconhece_formato(arquivo)
             
-            if formato not in lista_formatos:
+            if formato not in lista_formatos: #and formato not in lista_formatos_videos:
                 print(f"Formato do arquivo '{arquivo}' não suportado.")
                 lista_nao_suportados.append(arquivo)
                 continue
+            
+            #if formato in lista_formatos_videos:
+            #    print(f"Arquivo '{arquivo}' é um vídeo e não será processado.")
+            #    ao.extract_audio_from_video(caminho_completo)
+            #    lista_nao_suportados.append(arquivo)
+            #    continue
             
             tempo_processamento = ao.get_duration_audio(caminho_completo)
             print(f"Tempo de duração do {arquivo}: {tempo_processamento}")

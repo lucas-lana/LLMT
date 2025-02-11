@@ -116,14 +116,13 @@ class CheckBoxWindow(QWidget):
         else:
             self.result_label.setText("Nenhuma opção selecionada.")
 
-    def select_folder(self, line_edit):
-        """Abre o diálogo de seleção de pasta e atualiza o campo correspondente."""
-        # Obtém o diretório inicial (Pasta Inicial)
+    def select_folder(self,line_edit):
         initial_dir = mn.fo.os.path.expanduser("~")
-        folder = QFileDialog.getExistingDirectory(self, "Selecione uma Pasta", initial_dir)
-        if folder:  # Se o usuário selecionou uma pasta
+        folder = QFileDialog.getExistingDirectory(self,"Selecione uma Pasta",initial_dir)
+        if folder:
             line_edit.setText(folder)
-            self.check_button_state()  # Verifica o estado do botão após selecionar a pasta
+            self.check_button_state()           
+    
 
     def check_button_state(self):
         """Verifica se o botão 'Gerar Transcrição' deve ser habilitado."""
@@ -144,8 +143,7 @@ class CheckBoxWindow(QWidget):
             if self.checkbox2.isChecked():
                 multiplicador += 0.20
             if self.checkbox3.isChecked():
-                if mn.fo.check_internet_connection() == True:
-                    multiplicador += 0.46
+                multiplicador += 0.46
             tempo_processamento_total *= multiplicador
             if tempo_processamento_total >= 60:
                 self.time_label.setText(f"Tempo de processamento estimado: {tempo_processamento_total / 60:.2f} minutos")

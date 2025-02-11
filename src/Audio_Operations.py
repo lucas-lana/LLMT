@@ -1,6 +1,31 @@
+from moviepy import VideoFileClip
 from pydub import AudioSegment
 from io import BytesIO
 import Text_Operations as tx
+import os
+
+def extract_audio_from_video(video_path):
+    # Obtém o diretório do vídeo
+    video_directory = os.path.dirname(video_path)
+    
+    # Obtém o nome do arquivo sem a extensão
+    video_filename = os.path.splitext(os.path.basename(video_path))[0]
+    
+    # Define o caminho completo para o arquivo de áudio
+    output_audio_path = os.path.join(video_directory, f"{video_filename}.wav")
+    
+    # Carrega o vídeo
+    video_clip = VideoFileClip(video_path)
+    
+    # Extrai o áudio
+    audio_clip = video_clip.audio
+    
+    # Salva o áudio como um arquivo WAV
+    audio_clip.write_audiofile(output_audio_path, codec='pcm_s16le')
+    
+    # Fecha os clips para liberar recursos
+    audio_clip.close()
+    video_clip.close()
 
 def convert_to_wav(input_audio: BytesIO, format: str) -> BytesIO:
     """
