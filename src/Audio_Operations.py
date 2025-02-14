@@ -158,7 +158,7 @@ def get_duration_audio(file_path: str) -> float:
     return len(audio) / 1000  # Converte de milissegundos para segundos
 
 
-def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> str:
+def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos,prompt) -> str:
     vosk_min_text = "Vosk Simple Model: \n"
     vosk_max_text = "Vosk Complete Model: \n"
     speech_text = "Speech Recognition: \n"
@@ -238,8 +238,10 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> st
         #print("\n")
         #print(speech_text)
     
-    Prompt = "A partir apenas  das transcrições geradas pelos modelos, combine as trascrições afim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:" 
-    
+    if prompt == "":
+        Prompt = "A partir apenas  das transcrições geradas pelos modelos, combine as trascrições afim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:" 
+    else:
+        Prompt = prompt+":"
     
     texto = Prompt+"\n\n\nTestes do arquivo: " + arquivo + "\n" + "Duração: " 
     texto += f"{get_audio_duration(caminho_arquivo):.2f}\n"+ '-'*50 + "\n" 

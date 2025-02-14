@@ -77,11 +77,6 @@ def vosk_rec(audio_file: BytesIO) -> str:
 
 
 def speech_rec(audio: BytesIO) -> str:
-    
-    print("\n\nNo speech_rec")
-
-    if not fo.check_internet_connection():
-        return "\n\nErro: Conexão com a Internet interrompida\n\n"
 
     recognizer = sr.Recognizer()
     audio.seek(0)
