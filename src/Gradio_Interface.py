@@ -1,13 +1,12 @@
-import webbrowser
 import gradio as gr
 import File_Operations as fo
+from IPython.display import Javascript, display
 
 def tutorial_link():
-    url = "https://github.com/lucas-lana"
-    try:
-        return f'<script>window.open("{url}", "_blank");</script>'
-    except Exception as e:
-        print(f"Erro ao abrir o link: {e}")
+    js_code = """
+    window.open("https://www.google.com", "_blank");
+    """
+    display(Javascript(js_code))
 
 def process_inputs(model_1, model_2, model_3, prompt, files):
     models = 0
