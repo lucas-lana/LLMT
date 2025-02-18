@@ -9,7 +9,7 @@ import Audio_Operations as ao
 def trata_arquivo(lista_arquivos) :
     lista_formatos = ["mp3", "ogg", "flac","wav"]
     #lista_formatos_videos = ["mp4", "avi", "mov", "mkv"]
-    lista_nao_suportados = []
+    nova_lista_arquivos = []
     tempo_processamento = 0
     tempo_processamento_total = 0
 
@@ -20,7 +20,6 @@ def trata_arquivo(lista_arquivos) :
         
         if formato not in lista_formatos: #and formato not in lista_formatos_videos:
             print(f"Formato do arquivo '{arquivo}' não suportado.")
-            lista_nao_suportados.append(arquivo)
             continue
             
         #if formato in lista_formatos_videos:
@@ -55,38 +54,37 @@ def trata_arquivo(lista_arquivos) :
                 print(f"Novo arquivo WAV '{novo_nome}' foi criado.")
             except Exception as e:
                 print(f"Erro ao processar o arquivo '{arquivo}': {e}")
+            
+            nova_lista_arquivos.append(novo_nome)
+        else:
+            nova_lista_arquivos.append(caminho_completo)
         
         
         tempo_processamento_total += tempo_processamento
     print(f"Tempo de processamento total: {tempo_processamento_total}")                     
-    return lista_nao_suportados,tempo_processamento_total
+    return tempo_processamento_total,nova_lista_arquivos
                 
         
 
-def acessa_arquivos(lista_arquivos,arquivos_n_sup,escolha_modelos,prompt):
+def acessa_arquivos(lista_arquivos,escolha_modelos,prompt):
 
     arquivos_temporarios = {}
     # Percorre a pasta mãe e todas as subpasta e arquivos
     for caminho_arquivo in lista_arquivos:
         arquivo = (caminho_arquivo.split("/"))[4]
         # Procedimento do que fazer com os arquivos
-        print(f"Arquivo: {arquivo}")
+        print(f"Arquivo: {arquivo}")    
             
-        if arquivo in arquivos_n_sup:
-            continue
-            
-        else:
-            
-            # Tratar o nome do arquivo
-            nome_arquivo_texto = arquivo[:arquivo.rfind('.')] + "_Transcrição.txt"
-            
-            # Trasncreve o áudio
-            texto = ao.transcrever_audio(caminho_arquivo,arquivo,str(escolha_modelos),prompt)
-    
-            # Salvar o texto em um arquivo temporário
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.txt', mode='w', encoding='utf-8') as tmp_file:
-                tmp_file.write(texto)
-                arquivos_temporarios[nome_arquivo_texto] = tmp_file.name
+        # Tratar o nome do arquivo
+        nome_arquivo_texto = arquivo[:arquivo.rfind('.')] + "_Transcrição.txt"
+        
+        # Trasncreve o áudio
+        texto = ao.transcrever_audio(caminho_arquivo,arquivo,str(escolha_modelos),prompt)
+
+        # Salvar o texto em um arquivo temporário
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.txt', mode='w', encoding='utf-8') as tmp_file:
+            tmp_file.write(texto)
+            arquivos_temporarios[nome_arquivo_texto] = tmp_file.name
     
     return arquivos_temporarios
 
