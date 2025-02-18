@@ -5,8 +5,7 @@ import File_Operations as fo
 def tutorial_link():
     url = "https://github.com/lucas-lana"
     try:
-        webbrowser.open(url, new=0)
-        print(f"Link para o tutorial: {url}")
+        return f'<script>window.open("{url}", "_blank");</script>'
     except Exception as e:
         print(f"Erro ao abrir o link: {e}")
 
