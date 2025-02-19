@@ -3,7 +3,6 @@ import json
 
 from vosk import Model, KaldiRecognizer
 import speech_recognition as sr
-import File_Operations as fo
 from io import BytesIO
 
 def vosk_rec_min(audio_file: BytesIO) -> str:
