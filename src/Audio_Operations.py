@@ -1,31 +1,40 @@
 from moviepy import VideoFileClip
 from pydub import AudioSegment
-from io import BytesIO
 import Text_Operations as tx
+from io import BytesIO
 import os
 
-def extract_audio_from_video(video_path):
-    # Obtém o diretório do vídeo
-    video_directory = os.path.dirname(video_path)
+def convert_video_to_audio(video_file: str) -> BytesIO:
+    """
+    Converte um vídeo para áudio.
     
-    # Obtém o nome do arquivo sem a extensão
-    video_filename = os.path.splitext(os.path.basename(video_path))[0]
-    
-    # Define o caminho completo para o arquivo de áudio
-    output_audio_path = os.path.join(video_directory, f"{video_filename}.wav")
-    
-    # Carrega o vídeo
-    video_clip = VideoFileClip(video_path)
+    :param video_file: Caminho do arquivo de vídeo.
+    :return: Objeto BytesIO contendo o áudio extraído do vídeo.
+    """
+    # Lê o arquivo de vídeo
+    video = VideoFileClip(video_file)
     
     # Extrai o áudio
-    audio_clip = video_clip.audio
+    audio = video.audio
     
-    # Salva o áudio como um arquivo WAV
-    audio_clip.write_audiofile(output_audio_path, codec='pcm_s16le')
+    # Salva o áudio temporariamente em um arquivo WAV
+    audio.write_audiofile("temp_audio.wav", codec='pcm_s16le')
     
-    # Fecha os clips para liberar recursos
-    audio_clip.close()
-    video_clip.close()
+    # Fecha o vídeo para liberar recursos
+    video.close()
+    
+    # Carrega o áudio usando pydub
+    audio_segment = AudioSegment.from_wav("temp_audio.wav")
+    
+    # Cria um buffer para o áudio
+    audio_buffer = BytesIO()
+    audio_segment.export(audio_buffer, format="wav")
+    audio_buffer.seek(0)  # Retorna o cursor para o início do buffer
+    
+    # Remove o arquivo temporário
+    os.remove("temp_audio.wav")
+    
+    return audio_buffer
 
 def convert_to_wav(input_audio: BytesIO, format: str) -> BytesIO:
     """

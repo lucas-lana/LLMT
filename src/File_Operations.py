@@ -7,7 +7,7 @@ import Audio_Operations as ao
 
 def trata_arquivo(lista_arquivos) :
     lista_formatos = ["mp3", "ogg", "flac","wav"]
-    #lista_formatos_videos = ["mp4", "avi", "mov", "mkv"]
+    lista_formatos_videos = ["mp4", "avi", "mov", "mkv"]
     nova_lista_arquivos = []
     tempo_processamento = 0
     tempo_processamento_total = 0
@@ -17,16 +17,38 @@ def trata_arquivo(lista_arquivos) :
         arquivo = (caminho_completo.split("/"))[4]
         formato = ao.reconhece_formato(arquivo)
         
-        if formato not in lista_formatos: #and formato not in lista_formatos_videos:
+        if formato not in lista_formatos and formato not in lista_formatos_videos: #and formato not in lista_formatos_videos:
             print(f"Formato do arquivo '{arquivo}' não suportado.")
             continue
             
-        #if formato in lista_formatos_videos:
-        #    print(f"Arquivo '{arquivo}' é um vídeo e não será processado.")
-        #    ao.extract_audio_from_video(caminho_completo)
-        #    lista_nao_suportados.append(arquivo)
-        #    continue
+        if formato in lista_formatos_videos:
+            try :
+                # Converte o arquivo para WAV
+                audio = ao.convert_video_to_audio(caminho_completo)
+                
+                # Verifica se 'audio' é um objeto BytesIO, caso sim, obtém os bytes
+                if isinstance(audio, io.BytesIO):
+                    audio_bytes = audio.getvalue()
+                else:
+                    audio_bytes = audio
+                
+                # Remove o arquivo original
+                os.remove(caminho_completo)
+                print(f"Arquivo original '{arquivo}' foi excluído.")
+                
+                # Cria um novo arquivo WAV com o mesmo nome
+                novo_nome = os.path.splitext(caminho_completo)[0] + "_video.wav"
+                with open(novo_nome, "wb") as novo_arquivo:
+                    novo_arquivo.write(audio_bytes)
+                
+                print(f"Novo arquivo WAV '{novo_nome}' foi criado.")
+            except Exception as e:
+                print(f"Erro ao processar o arquivo '{arquivo}': {e}")
             
+            nova_lista_arquivos.append(novo_nome)
+            continue
+        
+        
         tempo_processamento = ao.get_duration_audio(caminho_completo)
         print(f"Tempo de duração do {arquivo}: {tempo_processamento}")
         

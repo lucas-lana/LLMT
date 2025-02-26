@@ -32,6 +32,7 @@ def process_inputs(model_1, model_2, model_3, prompt, files):
 
 def update_status(files, model_1, model_2, model_3):
     multipicador = 0
+    multipicador_video = 0
     if files is None or not any([model_1, model_2, model_3]):
         if files is None:
             return "⚠️ Nenhum arquivo carregado."
@@ -43,9 +44,18 @@ def update_status(files, model_1, model_2, model_3):
         # Atualiza a lista de arquivos com a nova lista retornada por trata_arquivos
         tempo_processo, files = fo.trata_arquivo(files)
         
+        for arquivo in files:
+            if arquivo.endswith("video.wav"):
+                multipicador_video +=0.35
+                print(f"Arquivo de vídeo detectado: {arquivo}")
+        
         if model_1: multipicador += 0.32
         if model_2: multipicador += 0.17
         if model_3: multipicador += 0.40
+        
+        print(f"Multiplicador: {multipicador}")
+        print(f"Multiplicador de vídeo: {multipicador_video}")
+        multipicador += multipicador_video
         tempo_total = tempo_processo * multipicador
         
         if tempo_total < 60:
