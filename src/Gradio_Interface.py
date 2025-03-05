@@ -46,7 +46,7 @@ def update_status(files, model_1, model_2, model_3):
         
         for arquivo in files:
             if arquivo.endswith("video.wav"):
-                multipicador_video +=0.35
+                multipicador_video =0.21
                 print(f"Arquivo de vídeo detectado: {arquivo}")
         
         if model_1: multipicador += 0.32
