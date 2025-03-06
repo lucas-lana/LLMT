@@ -81,27 +81,32 @@ mkdir -p "$PASTA_DESTINO" || erro "Falha ao criar a pasta de destino."
 NOME_ARQUIVO=$(basename "$URL")
 NOME_ARQUIVO2=$(basename "$URL2")
 
-# Baixa os arquivos ZIP em paralelo
-echo "Baixando modelos Vosk..."
-wget -O "$PASTA_DESTINO/$NOME_ARQUIVO" "$URL" &
-wget -O "$PASTA_DESTINO/$NOME_ARQUIVO2" "$URL2" &
-wait
-
-# Verifica se o download foi bem-sucedido
-if [ $? -eq 0 ]; then
-    echo "Download concluído com sucesso!"
+# Verifica se os modelos já estão instalados
+if [ -d "$PASTA_DESTINO/vosk-model-small-pt-0.3" ] && [ -d "$PASTA_DESTINO/vosk-model-pt-fb-v0.1.1-20220516_2113" ]; then
+    echo "Modelos Vosk já estão instalados."
 else
-    erro "Erro ao baixar os arquivos ZIP. Verifique sua conexão com a internet ou as URLs fornecidas."
+    # Baixa os arquivos ZIP em paralelo
+    echo "Baixando modelos Vosk..."
+    wget -O "$PASTA_DESTINO/$NOME_ARQUIVO" "$URL" &
+    wget -O "$PASTA_DESTINO/$NOME_ARQUIVO2" "$URL2" &
+    wait
+
+    # Verifica se o download foi bem-sucedido
+    if [ $? -eq 0 ]; then
+        echo "Download concluído com sucesso!"
+    else
+        erro "Erro ao baixar os arquivos ZIP. Verifique sua conexão com a internet ou as URLs fornecidas."
+    fi
+
+    # Extrai os arquivos ZIP
+    echo "Extraindo $NOME_ARQUIVO..."
+    unzip "$PASTA_DESTINO/$NOME_ARQUIVO" -d "$PASTA_DESTINO" || erro "Erro ao extrair $NOME_ARQUIVO."
+    echo "Extraindo $NOME_ARQUIVO2..."
+    unzip "$PASTA_DESTINO/$NOME_ARQUIVO2" -d "$PASTA_DESTINO" || erro "Erro ao extrair $NOME_ARQUIVO2."
+
+    # Remove os arquivos ZIP após a extração
+    rm "$PASTA_DESTINO/$NOME_ARQUIVO" "$PASTA_DESTINO/$NOME_ARQUIVO2" || erro "Falha ao remover os arquivos ZIP."
 fi
-
-# Extrai os arquivos ZIP
-echo "Extraindo $NOME_ARQUIVO..."
-unzip "$PASTA_DESTINO/$NOME_ARQUIVO" -d "$PASTA_DESTINO" || erro "Erro ao extrair $NOME_ARQUIVO."
-echo "Extraindo $NOME_ARQUIVO2..."
-unzip "$PASTA_DESTINO/$NOME_ARQUIVO2" -d "$PASTA_DESTINO" || erro "Erro ao extrair $NOME_ARQUIVO2."
-
-# Remove os arquivos ZIP após a extração
-rm "$PASTA_DESTINO/$NOME_ARQUIVO" "$PASTA_DESTINO/$NOME_ARQUIVO2" || erro "Falha ao remover os arquivos ZIP."
 
 # Limpeza final
 echo "Realizando limpeza final..."

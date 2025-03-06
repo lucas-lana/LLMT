@@ -32,6 +32,7 @@ def process_inputs(model_1, model_2, model_3, prompt, files):
 
 def update_status(files, model_1, model_2, model_3):
     multipicador = 0
+    multipicador_video = 0
     if files is None or not any([model_1, model_2, model_3]):
         if files is None:
             return "⚠️ Nenhum arquivo carregado."
@@ -43,9 +44,18 @@ def update_status(files, model_1, model_2, model_3):
         # Atualiza a lista de arquivos com a nova lista retornada por trata_arquivos
         tempo_processo, files = fo.trata_arquivo(files)
         
+        for arquivo in files:
+            if arquivo.endswith("video.wav"):
+                multipicador_video =0.21
+                print(f"Arquivo de vídeo detectado: {arquivo}")
+        
         if model_1: multipicador += 0.32
         if model_2: multipicador += 0.17
         if model_3: multipicador += 0.40
+        
+        print(f"Multiplicador: {multipicador}")
+        print(f"Multiplicador de vídeo: {multipicador_video}")
+        multipicador += multipicador_video
         tempo_total = tempo_processo * multipicador
         
         if tempo_total < 60:
@@ -74,11 +84,11 @@ if __name__ == "__main__":
             background: linear-gradient(135deg, #6a11cb, #2575fc);
             color: white;
             border: none;
-            padding: 8px 13px;
+            padding: 11px 13px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
-            font-size: 16px;
+            font-size: 18px;
             margin: 5px 1px;
             cursor: pointer;
             border-radius: 8px;
@@ -151,7 +161,7 @@ if __name__ == "__main__":
                 
                 status = gr.Textbox(label="Tempo de processamento", value="Aguardando interação...", interactive=False, elem_classes="status-box")
                 
-                tutorial_button = gr.Button(value="📖 Tutorial de Uso", elem_classes="gr-button")
+                #tutorial_button = gr.Button(value="📖 Tutorial de Uso", elem_classes="gr-button")
                 transcript_button = gr.Button(value="🚀 Gerar transcrição", elem_classes="gr-button")
             
             with gr.Column(scale=2):
@@ -166,7 +176,7 @@ if __name__ == "__main__":
             inputs=[model_1, model_2, model_3, prompt, files],
             outputs=[output]
         )
-        tutorial_button.click(fn=tutorial_link)
+        #tutorial_button.click(fn=tutorial_link)
         
         files.change(
             fn=update_files_and_status,
