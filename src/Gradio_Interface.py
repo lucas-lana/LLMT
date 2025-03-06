@@ -84,11 +84,11 @@ if __name__ == "__main__":
             background: linear-gradient(135deg, #6a11cb, #2575fc);
             color: white;
             border: none;
-            padding: 8px 13px;
+            padding: 11px 13px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
-            font-size: 16px;
+            font-size: 18px;
             margin: 5px 1px;
             cursor: pointer;
             border-radius: 8px;
@@ -161,7 +161,7 @@ if __name__ == "__main__":
                 
                 status = gr.Textbox(label="Tempo de processamento", value="Aguardando interação...", interactive=False, elem_classes="status-box")
                 
-                tutorial_button = gr.Button(value="📖 Tutorial de Uso", elem_classes="gr-button")
+                #tutorial_button = gr.Button(value="📖 Tutorial de Uso", elem_classes="gr-button")
                 transcript_button = gr.Button(value="🚀 Gerar transcrição", elem_classes="gr-button")
             
             with gr.Column(scale=2):
@@ -176,7 +176,7 @@ if __name__ == "__main__":
             inputs=[model_1, model_2, model_3, prompt, files],
             outputs=[output]
         )
-        tutorial_button.click(fn=tutorial_link)
+        #tutorial_button.click(fn=tutorial_link)
         
         files.change(
             fn=update_files_and_status,
