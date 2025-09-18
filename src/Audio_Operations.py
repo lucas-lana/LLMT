@@ -1,4 +1,4 @@
-from moviepy.editor import VideoFileClip
+from moviepy import VideoFileClip
 from pydub import AudioSegment
 import Text_Operations as tx
 from io import BytesIO
