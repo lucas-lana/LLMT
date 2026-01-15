@@ -294,10 +294,6 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos,prompt
     
     if prompt == "":
         Prompt = "A partir apenas das transcrições geradas pelos modelos, combine as transcrições a fim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:" 
-    elif prompt == "--ND":
-        Prompt = "A partir apenas das transcrições geradas pelos modelos, combine as transcrições a fim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:"
-    elif "--ND" in prompt:
-        Prompt = prompt.replace("--ND","")+":"
     else:
         Prompt = prompt+":"
     
