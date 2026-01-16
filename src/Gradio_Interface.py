@@ -2,7 +2,7 @@ import gradio as gr
 import File_Operations as fo
 import os
 
-# --- Funções Auxiliares (Mantidas iguais) ---
+# --- Funções Auxiliares (Mantidas) ---
 def combinar_arquivos(lista_pastas, lista_arquivos):
     arquivos_brutos = []
     if lista_pastas:
@@ -31,8 +31,11 @@ def tratar_e_limpar(files_folder, files_list):
 
 def update_status_text(files_folder, files_list, model_1, model_2, model_3):
     files = combinar_arquivos(files_folder, files_list)
-    if not files: return "⚠️ Nenhum arquivo carregado."
-    if not any([model_1, model_2, model_3]): return "⚠️ Nenhum modelo selecionado."
+    
+    if not files: 
+        return gr.update(value="⚠️ Nenhum arquivo carregado.", lines=1)
+    if not any([model_1, model_2, model_3]): 
+        return gr.update(value="⚠️ Nenhum modelo selecionado.", lines=1)
     
     tempo_processo, files_tratados, _ = fo.trata_arquivo(files)
     
@@ -49,11 +52,13 @@ def update_status_text(files_folder, files_list, model_1, model_2, model_3):
     tempo_total = tempo_processo * multipicador
     qtd = len(files_tratados)
     
-    if tempo_total < 60: return f"⏳ Tempo estimado: {tempo_total:.2f} s | Arquivos: {qtd}"
-    elif tempo_total < 3600: return f"⏳ Tempo estimado: {tempo_total/60:.2f} min | Arquivos: {qtd}"
-    else: return f"⏳ Tempo estimado: {tempo_total/3600:.2f} h | Arquivos: {qtd}"
+    msg = ""
+    if tempo_total < 60: msg = f"⏳ Tempo estimado: {tempo_total:.2f} s | Arquivos: {qtd}"
+    elif tempo_total < 3600: msg = f"⏳ Tempo estimado: {tempo_total/60:.2f} min | Arquivos: {qtd}"
+    else: msg = f"⏳ Tempo estimado: {tempo_total/3600:.2f} h | Arquivos: {qtd}"
 
-# --- FUNÇÃO PRINCIPAL ALTERADA ---
+    return gr.update(value=msg, lines=1)
+
 def process_inputs(model_1, model_2, model_3, prompt, files_folder, files_list):
     files = combinar_arquivos(files_folder, files_list)
     
@@ -63,75 +68,116 @@ def process_inputs(model_1, model_2, model_3, prompt, files_folder, files_list):
     if model_3: models += 4
     
     if models == 0 or files is None:
-        yield None, "⚠️ Erro: Arquivos ou modelos faltando."
+        yield None, gr.update(value="⚠️ Erro: Arquivos ou modelos faltando.", lines=1)
         return
 
-    # Preparação
     _, files, _ = fo.trata_arquivo(files)
     if not prompt: prompt = ""
     
     arquivos_prontos = []
     total_arquivos = len(files)
     
-    # LOOP COM ATUALIZAÇÃO DE STATUS
     for i, caminho_audio in enumerate(files):
         nome_atual = os.path.basename(caminho_audio)
         
-        # 1. Avisa que começou este arquivo (Mantém a lista anterior visível)
-        msg_status = f"🔄 Processando {i+1}/{total_arquivos}: '{nome_atual}'... Por favor aguarde."
-        yield arquivos_prontos, msg_status
+        msg_status = f"🔄 PROCESSANDO ARQUIVO {i+1} DE {total_arquivos}...\n\n📁 Arquivo atual: '{nome_atual}'"
+        yield arquivos_prontos, gr.update(value=msg_status, lines=4)
         
-        # 2. Realiza a transcrição
         caminho_txt = fo.transcrever_individual(caminho_audio, models, prompt)
         
         if caminho_txt and os.path.exists(caminho_txt):
             arquivos_prontos.append(caminho_txt)
             
-            # 3. Avisa que terminou este arquivo e atualiza a lista de downloads
-            msg_status = f"✅ '{nome_atual}' concluído! ({i+1}/{total_arquivos})"
-            yield arquivos_prontos, msg_status
+            msg_status = f"✅ SUCESSO!\n\nArquivo '{nome_atual}' concluído ({i+1}/{total_arquivos}).\nPassando para o próximo..."
+            yield arquivos_prontos, gr.update(value=msg_status, lines=4)
 
-    # Mensagem final quando sair do loop
-    yield arquivos_prontos, "🚀 Todas as transcrições foram concluídas!"
+    yield arquivos_prontos, gr.update(value="🚀 Todas as transcrições foram concluídas!", lines=2)
 
-# --- INTERFACE ---
 if __name__ == "__main__":
-    with gr.Blocks(css="""
+    
+    meu_css = """
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f9; }
-        .gr-button { background: linear-gradient(135deg, #6a11cb, #2575fc); color: white; border: none; padding: 11px; border-radius: 8px; transition: 0.3s; }
+        
+        /* Botões */
+        .gr-button { 
+            background: linear-gradient(135deg, #6a11cb, #2575fc); 
+            color: white; 
+            border: none; 
+            padding: 20px; 
+            border-radius: 8px; 
+            transition: 0.3s;
+            
+            /* --- ALTERAÇÕES AQUI --- */
+            font-size: 28px !important;  /* Aumentei para 28px */
+            font-weight: bold !important; 
+        }
         .gr-button:hover { transform: scale(1.02); }
-        .status-box { background: #2c3e50; border: 1px solid #1a252f; border-radius: 12px; padding: 12px; color: #ecf0f1; font-weight: bold; }
+        /* A linha ".gr-button textarea" foi removida pois não serve para botões */
+        
+        /* Status Box */
+        .status-box { background: #2c3e50; border: 1px solid #1a252f; border-radius: 12px; padding: 12px; color: #ecf0f1; }
+        .status-box textarea { font-size: 24px !important; line-height: 1.4 !important; font-weight: bold; }
+        
+        /* Abas Grandes */
+        .tabs-grandes button { font-size: 18px !important; padding: 10px 20px !important; font-weight: bold; margin-bottom: 2px !important; }
+        .tabs-grandes button.selected {border-bottom: 1px !important; }
+
+        /* Warning Box */
         .warning-box textarea { background-color: #ffe6e6 !important; color: #cc0000 !important; border: 1px solid #ffcccc !important; font-weight: bold; }
-        .header { font-size: 28px; font-weight: bold; color: #6a11cb; text-align: center; margin-bottom: 20px; }
+        
+        /* Checkboxes Grandes */
+        .check-big label span { 
+            font-size: 20px !important;  
+            line-height: 1.5 !important; 
+            padding-left: 5px !important;
+        }
+
+        /* --- NOVO: Título das Configurações --- */
+        /* O "h3" garante que pegamos o texto gerado pelo markdown "###" */
+        .title-big h3 { 
+            font-size: 25px !important; 
+            font-weight: bold !important;  
+            margin-bottom: 10px !important; 
+            margin-top: 10px !important;
+        }
+        
+        /* Headers e Spacer */
+        .header { font-size: 42px; font-weight: bold; text-align: center; margin-bottom: 40px; }
         .spacer-black { height: 3px; background-color:rgb(58, 58, 60); }
-    """) as demo:
-        gr.Markdown('<div class="header"> Transcrição Automática de Mídias</div>')        
+    """
+
+    with gr.Blocks(css=meu_css) as demo:
+        gr.Markdown('<div class="header"> Transcrição Automática de Mídias </div>')        
         with gr.Row():
+            
             with gr.Column(scale=1):
-                gr.Markdown("### 🛠️ Configurações:")
-                model_1 = gr.Checkbox(label="Simple Vosk", value=True)
-                model_2 = gr.Checkbox(label="Complete Vosk", value=True)
-                model_3 = gr.Checkbox(label="Speech Recognition", value=True)
-                prompt = gr.Textbox(label="📝 Prompt (opcional)", placeholder="Prompt personalizado...")
+                # Aplicando a classe personalizada no Markdown
+                gr.Markdown("### 🛠️ Configurações:", elem_classes="title-big")
+                
+                model_1 = gr.Checkbox(label="Simple Vosk", value=True, elem_classes="check-big")
+                model_2 = gr.Checkbox(label="Complete Vosk", value=True, elem_classes="check-big")
+                model_3 = gr.Checkbox(label="Speech Recognition", value=True, elem_classes="check-big")
+
+                # Nota: O prompt usa a classe check-big para afetar o label dele também
+                prompt = gr.Textbox(label="📝 Prompt (opcional)", placeholder="Prompt personalizado...", elem_classes="check-big")
                 
                 gr.HTML('<div class="spacer-black"></div>')
                 warning_box = gr.Textbox(label="⚠️ Avisos do Sistema", interactive=False, visible=False, elem_classes="warning-box")
                 
-                gr.Markdown("### 📊 Status:")
-                # Esta caixa agora será atualizada em tempo real durante o processo
-                status = gr.Textbox(label="Progresso", value="Aguardando início...", interactive=False, elem_classes="status-box")
+                gr.Markdown("### 📊 Status:", elem_classes="title-big") # Reaproveitei a classe aqui também
+                status = gr.Textbox(label="Progresso", value="⏳ Aguardando início...", interactive=False, lines=1, elem_classes="status-box")
                 
                 transcript_button = gr.Button(value="🚀 Gerar transcrição", elem_classes="gr-button")
             
-            with gr.Column(scale=2):
-                gr.Markdown("### 📂 Carregue seus arquivos:")
-                with gr.Tabs():
+            with gr.Column(scale=1.8):
+                gr.Markdown()
+                with gr.Tabs(elem_classes="tabs-grandes"):
+                    with gr.TabItem("📄 Upload de Arquivos"):
+                        files_list = gr.File(label="Selecione arquivos", file_count="multiple")
                     with gr.TabItem("📁 Upload de Pasta"):
                         files_folder = gr.File(label="Selecione uma pasta", file_count="directory")
-                    with gr.TabItem("📄 Arquivos Soltos"):
-                        files_list = gr.File(label="Arquivos prontos", file_count="multiple")
                                 
-                gr.Markdown("### 📥 Arquivos Gerados (Tempo Real):")
+                gr.Markdown("### 📥 Arquivos Gerados (Tempo Real):", elem_classes="title-big")
                 output = gr.File(label="Baixar Transcrições", file_count="multiple")
         
         # --- Eventos ---
@@ -145,7 +191,6 @@ if __name__ == "__main__":
         model_2.change(fn=update_status_text, inputs=inputs_status, outputs=[status])
         model_3.change(fn=update_status_text, inputs=inputs_status, outputs=[status])
         
-        # AQUI MUDOU: outputs recebe [output, status] para atualizar ambos ao mesmo tempo
         transcript_button.click(
             fn=process_inputs,
             inputs=[model_1, model_2, model_3, prompt, files_folder, files_list],
