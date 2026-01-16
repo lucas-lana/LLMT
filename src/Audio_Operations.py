@@ -294,6 +294,10 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos,prompt
     
     if prompt == "":
         Prompt = "A partir apenas das transcrições geradas pelos modelos, combine as transcrições a fim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:" 
+    elif prompt == "--ND":
+        Prompt = "A partir apenas das transcrições geradas pelos modelos, combine as transcrições a fim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:"
+    elif "--ND" in prompt:
+        Prompt = prompt.replace("--ND","")+":"
     else:
         Prompt = prompt+":"
     
@@ -320,6 +324,5 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos,prompt
         
     else:
         texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n\n" +speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
-    
     
     return texto

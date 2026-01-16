@@ -114,24 +114,39 @@ def trata_arquivo(lista_arquivos):
 
     return tempo_processamento_total, nova_lista_arquivos, lista_avisos
 
-# ... Mantenha acessa_arquivos e compactar_em_zip como estão ...
-def acessa_arquivos(lista_arquivos, escolha_modelos, prompt):
-    arquivos_temporarios = {}
-    for caminho_arquivo in lista_arquivos:
-        arquivo = os.path.basename(caminho_arquivo)
-        print(f"Processando: {arquivo}")    
-        nome_arquivo_texto = os.path.splitext(arquivo)[0] + "_Transcrição.txt"
-        
+def transcrever_individual(caminho_arquivo, escolha_modelos, prompt):
+    """
+    Processa um único arquivo de áudio e retorna o caminho do arquivo de texto gerado.
+    """
+    arquivo = os.path.basename(caminho_arquivo)
+    print(f"Iniciando transcrição de: {arquivo}")
+    
+    # Define o nome do arquivo de saída
+    nome_arquivo_texto = os.path.splitext(arquivo)[0] + "_Transcrição.txt"
+    
+    try:
+        # Chama a transcrição (Audio_Operations)
         texto = ao.transcrever_audio(caminho_arquivo, arquivo, str(escolha_modelos), prompt)
-
+        
+        # Cria o arquivo temporário .txt
         with tempfile.NamedTemporaryFile(delete=False, suffix='.txt', mode='w', encoding='utf-8') as tmp_file:
             tmp_file.write(texto)
-            arquivos_temporarios[nome_arquivo_texto] = tmp_file.name
-    
-    return arquivos_temporarios
+            # Renomeia o arquivo temporário para ter o nome bonito que queremos exibir
+            caminho_final = os.path.join(tempfile.gettempdir(), nome_arquivo_texto)
+            
+        # Move/Renomeia para o caminho final legível
+        if os.path.exists(caminho_final):
+            os.remove(caminho_final)
+        os.rename(tmp_file.name, caminho_final)
+        
+        return caminho_final
+
+    except Exception as e:
+        print(f"Erro ao transcrever individualmente {arquivo}: {e}")
+        return None
 
 def compactar_em_zip(arquivos_temporarios, nome_arquivo_zip):
     with zipfile.ZipFile(nome_arquivo_zip, 'w') as zipf:
-        for nome_arquivo, caminho in arquivos_temporarios.items():
+        for nome_arquivo, caminho in arquivos_temporarios:
             zipf.write(caminho, arcname=nome_arquivo)
     return nome_arquivo_zip
