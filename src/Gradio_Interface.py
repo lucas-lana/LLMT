@@ -2,7 +2,7 @@ import gradio as gr
 import File_Operations as fo
 import os
 
-# --- Funções Auxiliares (Mantidas) ---
+# --- Funções Auxiliares ---
 def combinar_arquivos(lista_pastas, lista_arquivos):
     arquivos_brutos = []
     if lista_pastas:
@@ -77,6 +77,7 @@ def process_inputs(model_1, model_2, model_3, prompt, files_folder, files_list):
     arquivos_prontos = []
     total_arquivos = len(files)
     
+    # --- Loop de Transcrição ---
     for i, caminho_audio in enumerate(files):
         nome_atual = os.path.basename(caminho_audio)
         
@@ -91,7 +92,17 @@ def process_inputs(model_1, model_2, model_3, prompt, files_folder, files_list):
             msg_status = f"✅ SUCESSO!\n\nArquivo '{nome_atual}' concluído ({i+1}/{total_arquivos}).\nPassando para o próximo..."
             yield arquivos_prontos, gr.update(value=msg_status, lines=4)
 
-    yield arquivos_prontos, gr.update(value="🚀 Todas as transcrições foram concluídas!", lines=2)
+    # --- Criação do ZIP Final ---
+    if arquivos_prontos:
+        yield arquivos_prontos, gr.update(value="📦 Compactando arquivos em ZIP...", lines=2)
+        
+        caminho_zip = fo.criar_zip_final(arquivos_prontos)
+        
+        if caminho_zip:
+            # Adiciona o zip à lista de arquivos para download
+            arquivos_prontos.append(caminho_zip)
+
+    yield arquivos_prontos, gr.update(value="🚀 Todas as transcrições foram concluídas e o ZIP foi criado!", lines=2)
 
 if __name__ == "__main__":
     
@@ -106,13 +117,10 @@ if __name__ == "__main__":
             padding: 20px; 
             border-radius: 8px; 
             transition: 0.3s;
-            
-            /* --- ALTERAÇÕES AQUI --- */
-            font-size: 28px !important;  /* Aumentei para 28px */
+            font-size: 28px !important; 
             font-weight: bold !important; 
         }
         .gr-button:hover { transform: scale(1.02); }
-        /* A linha ".gr-button textarea" foi removida pois não serve para botões */
         
         /* Status Box */
         .status-box { background: #2c3e50; border: 1px solid #1a252f; border-radius: 12px; padding: 12px; color: #ecf0f1; }
@@ -132,8 +140,7 @@ if __name__ == "__main__":
             padding-left: 5px !important;
         }
 
-        /* --- NOVO: Título das Configurações --- */
-        /* O "h3" garante que pegamos o texto gerado pelo markdown "###" */
+        /* Título das Configurações */
         .title-big h3 { 
             font-size: 25px !important; 
             font-weight: bold !important;  
@@ -151,20 +158,18 @@ if __name__ == "__main__":
         with gr.Row():
             
             with gr.Column(scale=1):
-                # Aplicando a classe personalizada no Markdown
                 gr.Markdown("### 🛠️ Configurações:", elem_classes="title-big")
                 
                 model_1 = gr.Checkbox(label="Simple Vosk", value=True, elem_classes="check-big")
                 model_2 = gr.Checkbox(label="Complete Vosk", value=True, elem_classes="check-big")
                 model_3 = gr.Checkbox(label="Speech Recognition", value=True, elem_classes="check-big")
 
-                # Nota: O prompt usa a classe check-big para afetar o label dele também
                 prompt = gr.Textbox(label="📝 Prompt (opcional)", placeholder="Prompt personalizado...", elem_classes="check-big")
                 
                 gr.HTML('<div class="spacer-black"></div>')
                 warning_box = gr.Textbox(label="⚠️ Avisos do Sistema", interactive=False, visible=False, elem_classes="warning-box")
                 
-                gr.Markdown("### 📊 Status:", elem_classes="title-big") # Reaproveitei a classe aqui também
+                gr.Markdown("### 📊 Status:", elem_classes="title-big")
                 status = gr.Textbox(label="Progresso", value="⏳ Aguardando início...", interactive=False, lines=1, elem_classes="status-box")
                 
                 transcript_button = gr.Button(value="🚀 Gerar transcrição", elem_classes="gr-button")

@@ -145,8 +145,30 @@ def transcrever_individual(caminho_arquivo, escolha_modelos, prompt):
         print(f"Erro ao transcrever individualmente {arquivo}: {e}")
         return None
 
-def compactar_em_zip(arquivos_temporarios, nome_arquivo_zip):
-    with zipfile.ZipFile(nome_arquivo_zip, 'w') as zipf:
-        for nome_arquivo, caminho in arquivos_temporarios:
-            zipf.write(caminho, arcname=nome_arquivo)
-    return nome_arquivo_zip
+def criar_zip_final(lista_caminhos):
+    """
+    Recebe uma lista de caminhos de arquivos, cria um ZIP temporário com eles
+    e retorna o caminho desse ZIP.
+    """
+    if not lista_caminhos:
+        return None
+
+    # Cria um nome para o zip na pasta temporária
+    caminho_zip = os.path.join(tempfile.gettempdir(), "Transcrições.zip")
+    
+    # Remove se já existir um antigo para não misturar
+    if os.path.exists(caminho_zip):
+        os.remove(caminho_zip)
+
+    try:
+        with zipfile.ZipFile(caminho_zip, 'w') as zipf:
+            for caminho in lista_caminhos:
+                if os.path.exists(caminho):
+                    # Adiciona ao zip usando apenas o nome do arquivo (sem pastas)
+                    nome_arquivo = os.path.basename(caminho)
+                    zipf.write(caminho, arcname=nome_arquivo)
+        
+        return caminho_zip
+    except Exception as e:
+        print(f"Erro ao criar ZIP: {e}")
+        return None
