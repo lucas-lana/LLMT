@@ -6,7 +6,7 @@ import speech_recognition as sr
 from io import BytesIO
 
 def vosk_rec_min(audio_file: BytesIO) -> str:
-    MODEL_PATH = "Modelos/Vosk/vosk-model-small-pt-0.3"
+    MODEL_PATH = "../Modelos/Vosk/vosk-model-small-pt-0.3"
 
     # Carregar o modelo
     model = Model(MODEL_PATH)
@@ -43,7 +43,7 @@ def vosk_rec_min(audio_file: BytesIO) -> str:
 
 def vosk_rec(audio_file: BytesIO) -> str:
     # Baixe o modelo para português em https://alphacephei.com/vosk/models
-    MODEL_PATH =  "Modelos/Vosk/vosk-model-pt-fb-v0.1.1-20220516_2113"
+    MODEL_PATH =  "../Modelos/Vosk/vosk-model-pt-fb-v0.1.1-20220516_2113"
 
     # Carregar o modelo
     model = Model(MODEL_PATH)
@@ -96,3 +96,18 @@ def speech_rec(audio: BytesIO) -> str:
             text = f"Erro ao acessar o serviço: {e}"
 
     return text
+
+if __name__ == "__main__":
+    # Teste rápido
+    with open("teste.wav", "rb") as f:
+        audio_bytes = f.read()
+    
+    audio_io = BytesIO(audio_bytes)
+    resultado = vosk_rec(audio_io)
+    resultado2 = vosk_rec_min(audio_io)
+    print("Vosk Resultado:", resultado)
+    print("Vosk Min Resultado:", resultado2)
+    
+    audio_io.seek(0)
+    resultado_sr = speech_rec(audio_io)
+    print("SpeechRecognition Resultado:", resultado_sr)

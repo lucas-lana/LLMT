@@ -3,106 +3,127 @@ import os
 import zipfile
 import tempfile
 import Audio_Operations as ao
-    
 
-def trata_arquivo(lista_arquivos) :
-    lista_formatos = ["mp3", "ogg", "flac","wav"]
+def trata_arquivo(lista_arquivos):
+    lista_formatos = ["mp3", "ogg", "flac", "wav"]
     lista_formatos_videos = ["mp4", "avi", "mov", "mkv"]
+    
     nova_lista_arquivos = []
+    lista_avisos = []
+    
     tempo_processamento = 0
     tempo_processamento_total = 0
 
-    
+    if not lista_arquivos:
+        return 0, [], []
+
     for caminho_completo in lista_arquivos:
-        arquivo = (caminho_completo.split("/"))[4]
-        formato = ao.reconhece_formato(arquivo)
+        # Verificação Nível 1: Se não existe agora, pula silenciosamente
+        if not os.path.exists(caminho_completo):
+            continue
+
+        arquivo = os.path.basename(caminho_completo)
         
-        if formato not in lista_formatos and formato not in lista_formatos_videos: #and formato not in lista_formatos_videos:
-            print(f"Formato do arquivo '{arquivo}' não suportado.")
+        try:
+            formato = ao.reconhece_formato(arquivo)
+        except:
+            formato = arquivo.split('.')[-1].lower() if '.' in arquivo else ""
+        
+        # 1. ARQUIVOS NÃO SUPORTADOS
+        if formato not in lista_formatos and formato not in lista_formatos_videos:
+            msg = f"⚠️ O arquivo '{arquivo}' não é suportado (formato: {formato})."
+            # Printa no console para debug, mas guarda a mensagem limpa
+            print(f"{msg}")
+            lista_avisos.append(msg)
+            try:
+                if os.path.exists(caminho_completo):
+                    os.remove(caminho_completo)
+            except:
+                pass
             continue
             
+        # 2. CONVERSÃO DE VÍDEOS
         if formato in lista_formatos_videos:
-            try :
-                # Converte o arquivo para WAV
+            # Verificação Nível 2: Garante que o arquivo ainda está lá antes de converter
+            if not os.path.exists(caminho_completo):
+                continue
+                
+            try:
                 audio = ao.convert_video_to_audio(caminho_completo)
+                if isinstance(audio, io.BytesIO): audio_bytes = audio.getvalue()
+                else: audio_bytes = audio
                 
-                # Verifica se 'audio' é um objeto BytesIO, caso sim, obtém os bytes
-                if isinstance(audio, io.BytesIO):
-                    audio_bytes = audio.getvalue()
-                else:
-                    audio_bytes = audio
+                if os.path.exists(caminho_completo):
+                    os.remove(caminho_completo)
                 
-                # Remove o arquivo original
-                os.remove(caminho_completo)
-                print(f"Arquivo original '{arquivo}' foi excluído.")
-                
-                # Cria um novo arquivo WAV com o mesmo nome
                 novo_nome = os.path.splitext(caminho_completo)[0] + "_video.wav"
+                
                 with open(novo_nome, "wb") as novo_arquivo:
                     novo_arquivo.write(audio_bytes)
                 
-                print(f"Novo arquivo WAV '{novo_nome}' foi criado.")
+                nova_lista_arquivos.append(novo_nome)
             except Exception as e:
-                print(f"Erro ao processar o arquivo '{arquivo}': {e}")
-            
-            nova_lista_arquivos.append(novo_nome)
+                # Se o erro for "arquivo não encontrado", é bug de concorrência. Ignora.
+                if "No such file" in str(e):
+                    continue
+                    
+                print(f"Erro técnico ao converter vídeo '{arquivo}': {e}")
+                msg = f"❌ Erro ao converter o vídeo '{arquivo}'" # Mensagem limpa
+                lista_avisos.append(msg)
             continue
         
-        
-        tempo_processamento = ao.get_duration_audio(caminho_completo)
-        print(f"Tempo de duração do {arquivo}: {tempo_processamento}")
+        # 3. PROCESSAMENTO DE ÁUDIOS
+        try:
+            tempo_processamento = ao.get_duration_audio(caminho_completo)
+        except:
+            tempo_processamento = 0
+            
+        print(f"Duração {arquivo}: {tempo_processamento}")
         
         if formato != "wav":
+            # Verificação Nível 2: Garante que o arquivo ainda está lá
+            if not os.path.exists(caminho_completo):
+                continue
+
             try:
-                # Converte o arquivo para WAV
                 audio = ao.convert_to_wav(caminho_completo, formato)
+                if isinstance(audio, io.BytesIO): audio_bytes = audio.getvalue()
+                else: audio_bytes = audio
                 
-                # Verifica se 'audio' é um objeto BytesIO, caso sim, obtém os bytes
-                if isinstance(audio, io.BytesIO):
-                    audio_bytes = audio.getvalue()
-                else:
-                    audio_bytes = audio
+                if os.path.exists(caminho_completo):
+                    os.remove(caminho_completo)
                 
-                # Remove o arquivo original
-                os.remove(caminho_completo)
-                print(f"Arquivo original '{arquivo}' foi excluído.")
-                
-                # Cria um novo arquivo WAV com o mesmo nome
                 novo_nome = os.path.splitext(caminho_completo)[0] + ".wav"
+                
                 with open(novo_nome, "wb") as novo_arquivo:
                     novo_arquivo.write(audio_bytes)
                 
-                print(f"Novo arquivo WAV '{novo_nome}' foi criado.")
+                nova_lista_arquivos.append(novo_nome)
             except Exception as e:
-                print(f"Erro ao processar o arquivo '{arquivo}': {e}")
-            
-            nova_lista_arquivos.append(novo_nome)
+                # Ignora erros de arquivo sumindo (corrida)
+                if "No such file" in str(e):
+                    continue
+
+                print(f"Erro técnico ao converter áudio '{arquivo}': {e}")
+                msg = f"❌ Erro ao converter o áudio '{arquivo}'" # Mensagem limpa
+                lista_avisos.append(msg)
         else:
             nova_lista_arquivos.append(caminho_completo)
         
-        
         tempo_processamento_total += tempo_processamento
-    print(f"Tempo de processamento total: {tempo_processamento_total}")                     
-    return tempo_processamento_total,nova_lista_arquivos
-                
-        
 
-def acessa_arquivos(lista_arquivos,escolha_modelos,prompt):
+    return tempo_processamento_total, nova_lista_arquivos, lista_avisos
 
+# ... Mantenha acessa_arquivos e compactar_em_zip como estão ...
+def acessa_arquivos(lista_arquivos, escolha_modelos, prompt):
     arquivos_temporarios = {}
-    # Percorre a pasta mãe e todas as subpasta e arquivos
     for caminho_arquivo in lista_arquivos:
-        arquivo = (caminho_arquivo.split("/"))[4]
-        # Procedimento do que fazer com os arquivos
-        print(f"Arquivo: {arquivo}")    
-            
-        # Tratar o nome do arquivo
-        nome_arquivo_texto = arquivo[:arquivo.rfind('.')] + "_Transcrição.txt"
+        arquivo = os.path.basename(caminho_arquivo)
+        print(f"Processando: {arquivo}")    
+        nome_arquivo_texto = os.path.splitext(arquivo)[0] + "_Transcrição.txt"
         
-        # Trasncreve o áudio
-        texto = ao.transcrever_audio(caminho_arquivo,arquivo,str(escolha_modelos),prompt)
+        texto = ao.transcrever_audio(caminho_arquivo, arquivo, str(escolha_modelos), prompt)
 
-        # Salvar o texto em um arquivo temporário
         with tempfile.NamedTemporaryFile(delete=False, suffix='.txt', mode='w', encoding='utf-8') as tmp_file:
             tmp_file.write(texto)
             arquivos_temporarios[nome_arquivo_texto] = tmp_file.name
@@ -110,9 +131,7 @@ def acessa_arquivos(lista_arquivos,escolha_modelos,prompt):
     return arquivos_temporarios
 
 def compactar_em_zip(arquivos_temporarios, nome_arquivo_zip):
-    # Criar um arquivo ZIP
     with zipfile.ZipFile(nome_arquivo_zip, 'w') as zipf:
         for nome_arquivo, caminho in arquivos_temporarios.items():
             zipf.write(caminho, arcname=nome_arquivo)
-    
     return nome_arquivo_zip
