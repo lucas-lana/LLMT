@@ -20,8 +20,10 @@ def tratar_e_limpar(files_folder, files_list):
     files = combinar_arquivos(files_folder, files_list)
     if not files:
         return None, None, gr.update(value="", visible=False)
-        
-    _, files_tratados, lista_avisos = fo.trata_arquivo(files)
+    
+    # MUDANÇA AQUI: apenas_verificar=True
+    # Isso impede que os arquivos sejam deletados/convertidos durante o upload
+    _, files_tratados, lista_avisos = fo.trata_arquivo(files, apenas_verificar=True)
     
     if lista_avisos:
         texto_aviso = "\n".join(lista_avisos)
@@ -37,12 +39,16 @@ def update_status_text(files_folder, files_list, model_1, model_2, model_3):
     if not any([model_1, model_2, model_3]): 
         return gr.update(value="⚠️ Nenhum modelo selecionado.", lines=1)
     
-    tempo_processo, files_tratados, _ = fo.trata_arquivo(files)
+    # MUDANÇA AQUI: apenas_verificar=True
+    # Apenas calcula tempo e checa formatos, não converte
+    tempo_processo, files_tratados, _ = fo.trata_arquivo(files, apenas_verificar=True)
     
     multipicador = 0
     multipicador_video = 0
+    # Lógica de estimativa mantida
     for arquivo in files_tratados:
-        if "video" in str(arquivo): multipicador_video = 0.21
+        if any(ext in str(arquivo).lower() for ext in ['.mp4', '.avi', '.mov', '.mkv']): 
+            multipicador_video = 0.21
             
     if model_1: multipicador += 0.32
     if model_2: multipicador += 0.17
@@ -71,7 +77,13 @@ def process_inputs(model_1, model_2, model_3, prompt, files_folder, files_list):
         yield None, gr.update(value="⚠️ Erro: Arquivos ou modelos faltando.", lines=1)
         return
 
-    _, files, _ = fo.trata_arquivo(files)
+    # MUDANÇA AQUI: Aqui chamamos SEM o parâmetro (ou False)
+    # Agora sim a conversão real acontece antes de transcrever
+    msg_status = "🔄 Preparando arquivos (Convertendo vídeos/áudios)..."
+    yield None, gr.update(value=msg_status, lines=2)
+    
+    _, files, _ = fo.trata_arquivo(files, apenas_verificar=False)
+    
     if not prompt: prompt = ""
     
     arquivos_prontos = []
@@ -104,6 +116,7 @@ def process_inputs(model_1, model_2, model_3, prompt, files_folder, files_list):
 
     yield arquivos_prontos, gr.update(value="🚀 Todas as transcrições foram concluídas e o ZIP foi criado!", lines=2)
 
+# ... (Resto do main e CSS permanece idêntico) ...
 if __name__ == "__main__":
     
     meu_css = """

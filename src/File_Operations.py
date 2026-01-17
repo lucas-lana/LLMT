@@ -4,14 +4,13 @@ import zipfile
 import tempfile
 import Audio_Operations as ao
 
-def trata_arquivo(lista_arquivos):
+def trata_arquivo(lista_arquivos, apenas_verificar=False):
     lista_formatos = ["mp3", "ogg", "flac", "wav"]
     lista_formatos_videos = ["mp4", "avi", "mov", "mkv"]
     
     nova_lista_arquivos = []
     lista_avisos = []
     
-    tempo_processamento = 0
     tempo_processamento_total = 0
 
     if not lista_arquivos:
@@ -32,19 +31,33 @@ def trata_arquivo(lista_arquivos):
         # 1. ARQUIVOS NÃO SUPORTADOS
         if formato not in lista_formatos and formato not in lista_formatos_videos:
             msg = f"⚠️ O arquivo '{arquivo}' não é suportado (formato: {formato})."
-            # Printa no console para debug, mas guarda a mensagem limpa
             print(f"{msg}")
             lista_avisos.append(msg)
-            try:
-                if os.path.exists(caminho_completo):
-                    os.remove(caminho_completo)
-            except:
-                pass
+            # Removemos apenas se NÃO for apenas verificação, para evitar conflitos de UI
+            if not apenas_verificar:
+                try:
+                    if os.path.exists(caminho_completo):
+                        os.remove(caminho_completo)
+                except:
+                    pass
             continue
             
-        # 2. CONVERSÃO DE VÍDEOS
+        # 2. SE FOR APENAS VERIFICAÇÃO (UI UPDATE)
+        if apenas_verificar:
+            # Tenta pegar duração bruta (pode falhar se a lib de audio não ler video, mas evita o crash)
+            try:
+                tempo = ao.get_duration_audio(caminho_completo)
+            except:
+                tempo = 0 # Assume 0 se não conseguir ler agora, será corrigido no processamento real
+            
+            tempo_processamento_total += tempo
+            nova_lista_arquivos.append(caminho_completo)
+            continue
+
+        # --- DAQUI PARA BAIXO SÓ EXECUTA NO BOTÃO "GERAR TRANSCRIÇÃO" ---
+
+        # 3. CONVERSÃO DE VÍDEOS
         if formato in lista_formatos_videos:
-            # Verificação Nível 2: Garante que o arquivo ainda está lá antes de converter
             if not os.path.exists(caminho_completo):
                 continue
                 
@@ -63,16 +76,14 @@ def trata_arquivo(lista_arquivos):
                 
                 nova_lista_arquivos.append(novo_nome)
             except Exception as e:
-                # Se o erro for "arquivo não encontrado", é bug de concorrência. Ignora.
                 if "No such file" in str(e):
-                    continue
-                    
+                    continue 
                 print(f"Erro técnico ao converter vídeo '{arquivo}': {e}")
-                msg = f"❌ Erro ao converter o vídeo '{arquivo}'" # Mensagem limpa
+                msg = f"❌ Erro ao converter o vídeo '{arquivo}'"
                 lista_avisos.append(msg)
             continue
         
-        # 3. PROCESSAMENTO DE ÁUDIOS
+        # 4. PROCESSAMENTO DE ÁUDIOS
         try:
             tempo_processamento = ao.get_duration_audio(caminho_completo)
         except:
@@ -81,7 +92,6 @@ def trata_arquivo(lista_arquivos):
         print(f"Duração {arquivo}: {tempo_processamento}")
         
         if formato != "wav":
-            # Verificação Nível 2: Garante que o arquivo ainda está lá
             if not os.path.exists(caminho_completo):
                 continue
 
@@ -100,12 +110,10 @@ def trata_arquivo(lista_arquivos):
                 
                 nova_lista_arquivos.append(novo_nome)
             except Exception as e:
-                # Ignora erros de arquivo sumindo (corrida)
                 if "No such file" in str(e):
                     continue
-
                 print(f"Erro técnico ao converter áudio '{arquivo}': {e}")
-                msg = f"❌ Erro ao converter o áudio '{arquivo}'" # Mensagem limpa
+                msg = f"❌ Erro ao converter o áudio '{arquivo}'"
                 lista_avisos.append(msg)
         else:
             nova_lista_arquivos.append(caminho_completo)
@@ -151,6 +159,9 @@ def criar_zip_final(lista_caminhos):
     e retorna o caminho desse ZIP.
     """
     if not lista_caminhos:
+        return None
+    
+    if len(lista_caminhos) == 1:
         return None
 
     # Cria um nome para o zip na pasta temporária
