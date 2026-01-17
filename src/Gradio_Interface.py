@@ -20,9 +20,8 @@ def tratar_e_limpar(files_folder, files_list):
     files = combinar_arquivos(files_folder, files_list)
     if not files:
         return None, None, gr.update(value="", visible=False)
-    
-    # MUDANÇA AQUI: apenas_verificar=True
-    # Isso impede que os arquivos sejam deletados/convertidos durante o upload
+        
+    # Mantém a correção anterior: apenas verifica na UI
     _, files_tratados, lista_avisos = fo.trata_arquivo(files, apenas_verificar=True)
     
     if lista_avisos:
@@ -39,13 +38,11 @@ def update_status_text(files_folder, files_list, model_1, model_2, model_3):
     if not any([model_1, model_2, model_3]): 
         return gr.update(value="⚠️ Nenhum modelo selecionado.", lines=1)
     
-    # MUDANÇA AQUI: apenas_verificar=True
-    # Apenas calcula tempo e checa formatos, não converte
+    # Mantém a correção anterior: apenas verifica na UI
     tempo_processo, files_tratados, _ = fo.trata_arquivo(files, apenas_verificar=True)
     
     multipicador = 0
     multipicador_video = 0
-    # Lógica de estimativa mantida
     for arquivo in files_tratados:
         if any(ext in str(arquivo).lower() for ext in ['.mp4', '.avi', '.mov', '.mkv']): 
             multipicador_video = 0.21
@@ -66,6 +63,12 @@ def update_status_text(files_folder, files_list, model_1, model_2, model_3):
     return gr.update(value=msg, lines=1)
 
 def process_inputs(model_1, model_2, model_3, prompt, files_folder, files_list):
+    """
+    Agora retorna 3 valores em cada yield:
+    1. Lista de arquivos (output)
+    2. Texto de Status
+    3. Estado do Botão (interactive=True/False)
+    """
     files = combinar_arquivos(files_folder, files_list)
     
     models = 0
@@ -73,15 +76,16 @@ def process_inputs(model_1, model_2, model_3, prompt, files_folder, files_list):
     if model_2: models += 2
     if model_3: models += 4
     
+    # Se der erro logo de cara, mantém o botão ativo
     if models == 0 or files is None:
-        yield None, gr.update(value="⚠️ Erro: Arquivos ou modelos faltando.", lines=1)
+        yield None, gr.update(value="⚠️ Erro: Arquivos ou modelos faltando.", lines=1), gr.update(interactive=True)
         return
 
-    # MUDANÇA AQUI: Aqui chamamos SEM o parâmetro (ou False)
-    # Agora sim a conversão real acontece antes de transcrever
+    # 1. BLOQUEIA O BOTÃO NO INÍCIO
     msg_status = "🔄 Preparando arquivos (Convertendo vídeos/áudios)..."
-    yield None, gr.update(value=msg_status, lines=2)
+    yield None, gr.update(value=msg_status, lines=2), gr.update(interactive=False)
     
+    # Processamento real (conversão e deleção segura)
     _, files, _ = fo.trata_arquivo(files, apenas_verificar=False)
     
     if not prompt: prompt = ""
@@ -94,7 +98,9 @@ def process_inputs(model_1, model_2, model_3, prompt, files_folder, files_list):
         nome_atual = os.path.basename(caminho_audio)
         
         msg_status = f"🔄 PROCESSANDO ARQUIVO {i+1} DE {total_arquivos}...\n\n📁 Arquivo atual: '{nome_atual}'"
-        yield arquivos_prontos, gr.update(value=msg_status, lines=4)
+        
+        # Mantém botão bloqueado durante o loop
+        yield arquivos_prontos, gr.update(value=msg_status, lines=4), gr.update(value="⏳ Gerando transcrições", interactive=False)
         
         caminho_txt = fo.transcrever_individual(caminho_audio, models, prompt)
         
@@ -102,21 +108,20 @@ def process_inputs(model_1, model_2, model_3, prompt, files_folder, files_list):
             arquivos_prontos.append(caminho_txt)
             
             msg_status = f"✅ SUCESSO!\n\nArquivo '{nome_atual}' concluído ({i+1}/{total_arquivos}).\nPassando para o próximo..."
-            yield arquivos_prontos, gr.update(value=msg_status, lines=4)
+            yield arquivos_prontos, gr.update(value=msg_status, lines=4), gr.update(interactive=False)
 
     # --- Criação do ZIP Final ---
     if arquivos_prontos:
-        yield arquivos_prontos, gr.update(value="📦 Compactando arquivos em ZIP...", lines=2)
+        yield arquivos_prontos, gr.update(value="📦 Compactando arquivos em ZIP...", lines=2), gr.update(interactive=False)
         
         caminho_zip = fo.criar_zip_final(arquivos_prontos)
         
         if caminho_zip:
-            # Adiciona o zip à lista de arquivos para download
             arquivos_prontos.append(caminho_zip)
 
-    yield arquivos_prontos, gr.update(value="🚀 Todas as transcrições foram concluídas e o ZIP foi criado!", lines=2)
+    # 2. REATIVA O BOTÃO NO FINAL
+    yield arquivos_prontos, gr.update(value="🚀 Todas as transcrições foram concluídas e o ZIP foi criado!", lines=2), gr.update(interactive=True)
 
-# ... (Resto do main e CSS permanece idêntico) ...
 if __name__ == "__main__":
     
     meu_css = """
@@ -209,10 +214,11 @@ if __name__ == "__main__":
         model_2.change(fn=update_status_text, inputs=inputs_status, outputs=[status])
         model_3.change(fn=update_status_text, inputs=inputs_status, outputs=[status])
         
+        # MUDANÇA AQUI: Adicionado 'transcript_button' na lista de outputs
         transcript_button.click(
             fn=process_inputs,
             inputs=[model_1, model_2, model_3, prompt, files_folder, files_list],
-            outputs=[output, status]
+            outputs=[output, status, transcript_button]
         )
     
     demo.launch(share=True)
