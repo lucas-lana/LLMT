@@ -2,8 +2,8 @@
 __pycache__
 lib/
 rst/
-src/Modelos
+/Modelos/Vosk
 venv/
-Install_Linux.sh
 Install_Windows.ps1
-requirements.txt
+.gradio/
+Transcrições.rar

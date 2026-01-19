@@ -1,31 +1,40 @@
 from moviepy import VideoFileClip
 from pydub import AudioSegment
-from io import BytesIO
 import Text_Operations as tx
+from io import BytesIO
 import os
 
-def extract_audio_from_video(video_path):
-    # Obtém o diretório do vídeo
-    video_directory = os.path.dirname(video_path)
+def convert_video_to_audio(video_file: str) -> BytesIO:
+    """
+    Converte um vídeo para áudio.
     
-    # Obtém o nome do arquivo sem a extensão
-    video_filename = os.path.splitext(os.path.basename(video_path))[0]
-    
-    # Define o caminho completo para o arquivo de áudio
-    output_audio_path = os.path.join(video_directory, f"{video_filename}.wav")
-    
-    # Carrega o vídeo
-    video_clip = VideoFileClip(video_path)
+    :param video_file: Caminho do arquivo de vídeo.
+    :return: Objeto BytesIO contendo o áudio extraído do vídeo.
+    """
+    # Lê o arquivo de vídeo
+    video = VideoFileClip(video_file)
     
     # Extrai o áudio
-    audio_clip = video_clip.audio
+    audio = video.audio
     
-    # Salva o áudio como um arquivo WAV
-    audio_clip.write_audiofile(output_audio_path, codec='pcm_s16le')
+    # Salva o áudio temporariamente em um arquivo WAV
+    audio.write_audiofile("temp_audio.wav", codec='pcm_s16le')
     
-    # Fecha os clips para liberar recursos
-    audio_clip.close()
-    video_clip.close()
+    # Fecha o vídeo para liberar recursos
+    video.close()
+    
+    # Carrega o áudio usando pydub
+    audio_segment = AudioSegment.from_wav("temp_audio.wav")
+    
+    # Cria um buffer para o áudio
+    audio_buffer = BytesIO()
+    audio_segment.export(audio_buffer, format="wav")
+    audio_buffer.seek(0)  # Retorna o cursor para o início do buffer
+    
+    # Remove o arquivo temporário
+    os.remove("temp_audio.wav")
+    
+    return audio_buffer
 
 def convert_to_wav(input_audio: BytesIO, format: str) -> BytesIO:
     """
@@ -143,7 +152,7 @@ def reconhece_formato(caminho: str) -> str:
     :caminho: O caminho do arquivo
     :return: o formato do arquivo
     """
-    partes = caminho.split(".")
+    partes = caminho.lower().split(".")
     return partes[-1]
 
 def get_audio_duration(audio_file: str) -> float:
@@ -158,7 +167,7 @@ def get_duration_audio(file_path: str) -> float:
     return len(audio) / 1000  # Converte de milissegundos para segundos
 
 
-def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> str:
+def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos,prompt) -> str:
     vosk_min_text = "Vosk Simple Model: \n"
     vosk_max_text = "Vosk Complete Model: \n"
     speech_text = "Speech Recognition: \n"
@@ -173,57 +182,40 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> st
     audio_segment = AudioSegment.from_file(audio)
     duracao = len(audio_segment)
     
-    max_duracao = 3 * 60 * 1000  # Máximo de 3 minutos por parte
-    qtd_partes = (duracao // max_duracao) + (1 if (duracao % max_duracao) > 0 else 0)
-    
-    for parte in range(qtd_partes):
-        lista_partes = []
-        
-        inicio = parte * max_duracao
-        fim = min((parte + 1) * max_duracao, duracao)
-        
-        # Obtém a parte do áudio como um AudioSegment
-        parte_atual = audio_segment[inicio:fim]
-        
-        # Converte a parte atual para BytesIO antes de passar para a função de transcrição
-        parte_atual_io = BytesIO()
-        parte_atual.export(parte_atual_io, format="wav")
-        parte_atual_io.seek(0)
-        
-        # Passa a parte para a função de transcrição
-        lista_partes = tx.texto(parte_atual_io,escolha_modelos)
+    if "--ND" in prompt:
+        lista_partes = tx.texto(audio,escolha_modelos)
         if len(lista_partes) == 4:
             if escolha_modelos == "3":
                 vosk_min_text += str(lista_partes[0])
                 vosk_max_text += str(lista_partes[1])
                 vosk_min_time += float(lista_partes[2]) 
                 vosk_max_time += float(lista_partes[3])
-            
+
             elif escolha_modelos == "5":
                 vosk_min_text += str(lista_partes[0])
                 speech_text += str(lista_partes[1])
                 vosk_min_time += float(lista_partes[2])
                 speech_time += float(lista_partes[3])
-                
+
             else:
                 vosk_max_text += str(lista_partes[0])
                 speech_text += str(lista_partes[1])
                 vosk_max_time += float(lista_partes[2])
                 speech_time += float(lista_partes[3])
-                
+
         elif len(lista_partes) == 2:
             if escolha_modelos == "1":
                 vosk_min_text += str(lista_partes[0])
                 vosk_min_time += float(lista_partes[1])
-                
+
             elif escolha_modelos == "2":
                 vosk_max_text += str(lista_partes[0])
                 vosk_max_time += float(lista_partes[1])
-                
+
             elif escolha_modelos == "4":
                 speech_text += str(lista_partes[0])
                 speech_time += float(lista_partes[1])
-        
+
         else:
             vosk_min_text += str(lista_partes[0])
             vosk_max_text += str(lista_partes[1])
@@ -232,14 +224,82 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> st
             vosk_max_time += float(lista_partes[4]) 
             speech_time += float(lista_partes[5])
         
-        #print(vosk_min_text)
-        #print("\n")
-        #print(vosk_max_text)
-        #print("\n")
-        #print(speech_text)
+        
+    else:
+        max_duracao = 3 * 60 * 1000  # Máximo de 3 minutos por parte
+        qtd_partes = (duracao // max_duracao) + (1 if (duracao % max_duracao) > 0 else 0)
+
+        for parte in range(qtd_partes):
+            lista_partes = []
+
+            inicio = parte * max_duracao
+            fim = min((parte + 1) * max_duracao, duracao)
+
+            # Obtém a parte do áudio como um AudioSegment
+            parte_atual = audio_segment[inicio:fim]
+
+            # Converte a parte atual para BytesIO antes de passar para a função de transcrição
+            parte_atual_io = BytesIO()
+            parte_atual.export(parte_atual_io, format="wav")
+            parte_atual_io.seek(0)
+
+            # Passa a parte para a função de transcrição
+            lista_partes = tx.texto(parte_atual_io,escolha_modelos)
+            if len(lista_partes) == 4:
+                if escolha_modelos == "3":
+                    vosk_min_text += str(lista_partes[0])
+                    vosk_max_text += str(lista_partes[1])
+                    vosk_min_time += float(lista_partes[2]) 
+                    vosk_max_time += float(lista_partes[3])
+
+                elif escolha_modelos == "5":
+                    vosk_min_text += str(lista_partes[0])
+                    speech_text += str(lista_partes[1])
+                    vosk_min_time += float(lista_partes[2])
+                    speech_time += float(lista_partes[3])
+
+                else:
+                    vosk_max_text += str(lista_partes[0])
+                    speech_text += str(lista_partes[1])
+                    vosk_max_time += float(lista_partes[2])
+                    speech_time += float(lista_partes[3])
+
+            elif len(lista_partes) == 2:
+                if escolha_modelos == "1":
+                    vosk_min_text += str(lista_partes[0])
+                    vosk_min_time += float(lista_partes[1])
+
+                elif escolha_modelos == "2":
+                    vosk_max_text += str(lista_partes[0])
+                    vosk_max_time += float(lista_partes[1])
+
+                elif escolha_modelos == "4":
+                    speech_text += str(lista_partes[0])
+                    speech_time += float(lista_partes[1])
+
+            else:
+                vosk_min_text += str(lista_partes[0])
+                vosk_max_text += str(lista_partes[1])
+                speech_text += str(lista_partes[2])
+                vosk_min_time += float(lista_partes[3]) 
+                vosk_max_time += float(lista_partes[4]) 
+                speech_time += float(lista_partes[5])
+
+            #print(vosk_min_text)
+            #print("\n")
+            #print(vosk_max_text)
+            #print("\n")
+            #print(speech_text)
     
-    Prompt = "A partir apenas  das transcrições geradas pelos modelos, combine as trascrições afim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:" 
     
+    if prompt == "":
+        Prompt = "A partir apenas das transcrições geradas pelos modelos, combine as transcrições a fim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:" 
+    elif prompt == "--ND":
+        Prompt = "A partir apenas das transcrições geradas pelos modelos, combine as transcrições a fim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:"
+    elif "--ND" in prompt:
+        Prompt = prompt.replace("--ND","")+":"
+    else:
+        Prompt = prompt+":"
     
     texto = Prompt+"\n\n\nTestes do arquivo: " + arquivo + "\n" + "Duração: " 
     texto += f"{get_audio_duration(caminho_arquivo):.2f}\n"+ '-'*50 + "\n" 
@@ -264,6 +324,5 @@ def transcrever_audio(caminho_arquivo: str, arquivo: str, escolha_modelos) -> st
         
     else:
         texto += vosk_min_text +f"(Tempo: {vosk_min_time:.2f} segundos)" + "\n\n" + vosk_max_text +f"(Tempo: {vosk_max_time:.2f} segundos)" + "\n\n" +speech_text + f"(Tempo: {speech_time:.2f} segundos)" + "\n"
-    
     
     return texto
