@@ -138,7 +138,7 @@ if __name__ == "__main__":
             font-size: 28px !important; 
             font-weight: bold !important; 
         }
-        .gr-button:hover { transform: scale(1.02); }
+        .gr-button:hover { transform: scale(1); }
         
         /* Status Box */
         .status-box { background: #2c3e50; border: 1px solid #1a252f; border-radius: 12px; padding: 12px; color: #ecf0f1; }
@@ -170,8 +170,8 @@ if __name__ == "__main__":
         .header { font-size: 42px; font-weight: bold; text-align: center; margin-bottom: 40px; }
         .spacer-black { height: 3px; background-color:rgb(58, 58, 60); }
     """
-
-    with gr.Blocks(css=meu_css) as demo:
+    
+    with gr.Blocks() as demo:  
         gr.Markdown('<div class="header"> Transcrição Automática de Mídias </div>')        
         with gr.Row():
             
@@ -192,7 +192,7 @@ if __name__ == "__main__":
                 
                 transcript_button = gr.Button(value="🚀 Gerar transcrição", elem_classes="gr-button")
             
-            with gr.Column(scale=1.8):
+            with gr.Column(scale=2):
                 gr.Markdown()
                 with gr.Tabs(elem_classes="tabs-grandes"):
                     with gr.TabItem("📄 Upload de Arquivos"):
@@ -214,11 +214,10 @@ if __name__ == "__main__":
         model_2.change(fn=update_status_text, inputs=inputs_status, outputs=[status])
         model_3.change(fn=update_status_text, inputs=inputs_status, outputs=[status])
         
-        # MUDANÇA AQUI: Adicionado 'transcript_button' na lista de outputs
         transcript_button.click(
             fn=process_inputs,
             inputs=[model_1, model_2, model_3, prompt, files_folder, files_list],
             outputs=[output, status, transcript_button]
         )
     
-    demo.launch(share=True)
+    demo.launch(share=True, css=meu_css)

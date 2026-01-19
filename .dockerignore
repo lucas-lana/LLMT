@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.git
+.env
+*.sh
+To-Do
+README.md
+.gitignore

@@ -152,7 +152,7 @@ def reconhece_formato(caminho: str) -> str:
     :caminho: O caminho do arquivo
     :return: o formato do arquivo
     """
-    partes = caminho.split(".")
+    partes = caminho.lower().split(".")
     return partes[-1]
 
 def get_audio_duration(audio_file: str) -> float:
