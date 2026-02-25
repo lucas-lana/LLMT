@@ -346,6 +346,10 @@ R: Não! A ferramenta apenas gera novas transcrições e não modifica seus arqu
 
 ---
 
+## Próximos Passos:
+- Atualizar o read.me, disponibilizando o link para o Space no HuggingFace
+- Implementar um integração da saída (as transcrições) com uma LLM, possivelmente usando o n8n
+
 **Desenvolvido por Lucas Fonseca Sabino Lana**
 
 **Última atualização**: Janeiro 2026
