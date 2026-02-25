@@ -33,7 +33,7 @@ numpy==2.4.1
 orjson==3.11.5
 packaging==25.0
 pandas==2.3.3
-pillow==11.3.0
+pillow==12.1.1
 proglog==0.1.12
 pycparser==2.23
 pydantic==2.12.5
