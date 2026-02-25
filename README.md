@@ -1,13 +1,38 @@
 # LLMT - Mídia To Text (Lucas Lana Multimidia Transcriber)
 
-Uma ferramenta gratuita e poderosa para transcrição de áudio e vídeo utilizando múltiplos modelos de IA.
+[![Hugging Face Spaces](https://img.shields.io/badge/🤗%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/lucas-lana/llmt)
+[![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg)](https://www.python.org/downloads/release/python-3140/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Uma ferramenta gratuita  para transcrição de áudio e vídeo em português utilizando múltiplos modelos de IA.
 
 **Autor:** Lucas Fonseca Sabino Lana  
 **Contato:** [lucas.sabino.lana@gmail.com](mailto:lucas.sabino.lana@gmail.com)
 
+---
+
+## 📑 Índice
+
+- [🎯 Descrição](#-descrição)
+- [🚀 Início Rápido](#-início-rápido)
+- [📋 Requisitos](#-requisitos)
+- [📁 Estrutura do Projeto](#-estrutura-do-projeto)
+- [🔧 Configuração](#-configuração)
+- [💻 Usando a Interface](#-usando-a-interface)
+- [🐳 Docker](#-docker)
+- [🤖 Modelos de Transcrição](#-modelos-de-transcrição)
+- [📦 Instalação Manual](#-instalação-manual)
+- [🔍 Resolução de Problemas](#-resolução-de-problemas)
+- [📝 Dependências Chave](#-dependências-chave)
+- [🤝 Contribuindo](#-contribuindo)
+- [📄 Licença](#-licença)
+- [❓ Dúvidas e Suporte](#-dúvidas-e-suporte)
+
+---
+
 ## 🎯 Descrição
 
-LLMT (Mídia To Text) é uma ferramenta inovadora que oferece **transcrição gratuita de áudio e vídeo** utilizando múltiplos modelos de IA. O projeto fornece uma interface web interativa (Gradio) que funciona em **Google Colab** ou em instalação local, permitindo que qualquer pessoa transcreva conteúdo multimídia sem custos.
+LLMT (Mídia To Text) é uma ferramenta inovadora que oferece **transcrição gratuita de áudio e vídeo** utilizando múltiplos modelos de IA. O projeto fornece uma interface web interativa (Gradio) que funciona em **Hugging Face Spaces** ou em instalação local, permitindo que qualquer pessoa transcreva conteúdo multimídia sem custos.
 
 ### Funcionalidades Principais
 - **Reconhecimento de Voz**: Transcrição de áudio em português usando modelos Vosk
@@ -21,11 +46,11 @@ LLMT (Mídia To Text) é uma ferramenta inovadora que oferece **transcrição gr
 ### Como Funciona
 A ferramenta foi projetada para ser intuitiva e acessível:
 
-1. **Acesse a Interface**: Clique no link do Colab ou execute localmente
+1. **Acesse a Interface**: Clique no link do Hugging Face Spaces ou execute localmente
 2. **Carregue seu Arquivo**: Arraste ou selecione um arquivo de áudio/vídeo
-3. **Escolha o Modelo**: Selecione qual modelo de transcrição usar
-4. **Aguarde o Processamento**: O tempo estimado é exibido antes de iniciar
-5. **Baixe os Resultados**: Receba transcrições em arquivo .rar com formato TXT
+3. **Escolha o Modelo(s)**: Selecione qual modelo de transcrição usar (use os três modelos para uma maior qualidade de transcrição)
+4. **Aguarde o Processamento**: O tempo estimado é exibido antes de iniciar (quanto mais modelos selecionados, mais demora o processamento)
+5. **Baixe os Resultados**: Receba transcrições em arquivo .zip (ou .rar) com formato TXT
 
 ### Formatos Aceitos
 
@@ -47,21 +72,18 @@ A ferramenta foi projetada para ser intuitiva e acessível:
 
 ## 🚀 Início Rápido
 
-### 🔗 Opção 1: Google Colab (Recomendado - Sem Instalação)
+### 🤗 Opção 1: Hugging Face Spaces (Recomendado - Sem Instalação)
 
-A forma mais fácil de usar LLMT é através do Google Colab:
+A forma mais fácil e rápida de usar o LLMT é através do Hugging Face Spaces. Não requer instalação e roda diretamente no seu navegador:
 
-1. **Acesse o Link**: [Abra LLMT no Google Colab](https://colab.research.google.com/drive/1o2aB6_ouxhTkYo2qLN_tj0dFKJnmDQ_r?usp=sharing)
-2. **Execute Setup Automático**: Clique na seta (▶) no canto superior esquerdo
-3. **Aguarde 3-5 minutos**: O ambiente será configurado automaticamente
-4. **Acesse a Interface**: Clique no segundo link gerado (terminando com `gradio.live`)
-5. **Comece a Transcrever**: A aplicação fica ativa por até 85 horas contínuas
+1. **Acesse o Link**: [LLMT no Hugging Face Spaces](https://huggingface.co/spaces/lucas-lana/llmt)
+2. **Desperte o Espaço (se necessário)**: Como a hospedagem gratuita pausa aplicações inativas, o espaço pode estar "dormindo" (status *Sleeping* ou *Paused*). Se isso acontecer, basta clicar no botão na tela para iniciá-lo e aguardar alguns instantes até que a aplicação carregue.
+3. **Pronto para usar**: A interface estará carregada e pronta para suas transcrições.
 
 **Vantagens:**
-- ✅ Sem necessidade de instalação
-- ✅ Servidores GPU do Google (processamento mais rápido)
+- ✅ Zero configuração ou necessidade de rodar scripts
 - ✅ Acesso de qualquer lugar com internet
-- ✅ Totalmente gratuito
+- ✅ Totalmente gratuito e hospedado na nuvem
 
 ### 🐳 Opção 2: Docker (Recomendado - Instalação Local)
 
@@ -73,17 +95,18 @@ docker build -t llmt:latest .
 docker run -p 7860:7860 llmt:latest
 ```
 
-A aplicação estará disponível em `http://localhost:7860`
-
+A aplicação estará disponível em http://localhost:7860
 ### 💻 Opção 3: Instalação Local (Linux)
 
-```bash
-# O script de instalação configura tudo automaticamente
-sudo bash Install_Linux.sh
+> **⚠️ Atenção:**
+>  - Este projeto foi otimizado e configurado para rodar estritamente no Python 3.14. Versões anteriores podem apresentar falhas de compatibilidade com as dependências.
+>  - O gerenciador de pacotes deste arquivo de instalação é o `apt-get` 
 
-# Executar a aplicação
-python src/Gradio_Interface.py
-```
+#### O script de instalação configura tudo automaticamente:
+      sudo bash Install_Linux.sh
+
+#### Executar a aplicação:
+      python src/Gradio_Interface.py
 
 ## 📋 Requisitos
 
@@ -99,11 +122,11 @@ python src/Gradio_Interface.py
 - **FFmpeg** - Conversão de formato de áudio
 - **NumPy** - Computação numérica
 
-Para a lista completa de dependências, veja [requirements.txt](requirements.txt)
+Para a lista completa de dependências, veja [requirements.txt](requirements.txt).
 
 ## 📁 Estrutura do Projeto
 
-```
+```text
 LLMT/
 ├── src/
 │   ├── Gradio_Interface.py      # Interface web principal
@@ -120,14 +143,13 @@ LLMT/
 ├── requirements.txt            # Dependências Python
 └── README.md                   # Este arquivo
 ```
-
 ## 🔧 Configuração
 
 ### Variáveis de Ambiente
 
 Ao usar Docker, as seguintes variáveis estão pré-configuradas:
 
-```
+```text
 PYTHONPATH=/app/src
 GRADIO_SERVER_NAME=0.0.0.0
 GRADIO_SERVER_PORT=7860
@@ -139,8 +161,9 @@ PYTHONDONTWRITEBYTECODE=1
 
 O projeto utiliza dois modelos de reconhecimento de voz em português:
 
-1. **vosk-model-small-pt-0.3** - Modelo leve (recomendado para recursos limitados)
-2. **vosk-model-pt-fb-v0.1.1** - Modelo completo (melhor precisão)
+    vosk-model-small-pt-0.3 - Modelo leve (recomendado para recursos limitados)
+
+    vosk-model-pt-fb-v0.1.1 - Modelo completo (melhor precisão)
 
 Os modelos são baixados automaticamente pelo script de instalação.
 
@@ -149,57 +172,56 @@ Os modelos são baixados automaticamente pelo script de instalação.
 ### Guia Passo a Passo
 
 #### 1. **Carregue seu Arquivo**
-   - Arraste um arquivo de áudio ou vídeo para a área indicada
-   - Ou clique para selecionar manualmente
-   - Formatos suportados: MP3, WAV, OGG, MP4, MKV, AVI
+   - Arraste um arquivo de áudio ou vídeo para a área indicada.
+   - Ou clique para selecionar manualmente.
+   - Formatos suportados: MP3, WAV, OGG, MP4, MKV, AVI.
 
 #### 2. **Verifique o Tempo Estimado**
-   - No canto inferior esquerdo, você verá o tempo estimado de processamento
-   - Pode remover arquivos ou alterar o modelo durante a espera
+   - No canto inferior esquerdo, você verá o tempo estimado de processamento.
+   - Pode remover arquivos ou alterar o modelo durante a espera.
 
 #### 3. **Escolha o Modelo de Transcrição**
-   - **Vosk Simple**: Rápido mas menos preciso
-   - **Vosk Complete**: Mais completo, marca palavras desconhecidas
-   - **Google Speech Recognition**: Ótimo para inglês
+   - **Vosk Simple**: Rápido mas menos preciso.
+   - **Vosk Complete**: Mais completo, marca palavras desconhecidas.
+   - **Google Speech Recognition**: Ótimo para inglês.
 
-#### 4. **Inicie o Processamento**
-   - Clique em "Gerar Transcrição"
-   - O sistema processa nos servidores do Google (ou localmente)
-   - Áudios longos são divididos em segmentos otimizados (~3 minutos)
+#### 4. **Defina o prompt**
+   - Se não passar nenhum prompt, existe um prompt padrão que é usado para criar uma transcrição final juntando todas as transcrições : ` A partir apenas das transcrições geradas pelos modelos, combine as transcrições a fim de gerar um texto fusão sendo o mais coerente e fiel as informações dos textos:`
+   - Caso ache o prompt padrão não atende as suas necessidades / vontades, é possível passar um prompt personalizado.
+   - Clique na caixa "Prompt personalizado", abaixo de "Prompt (Opicional)" e digite o seu prompt
+   - A primeira linha do arquivo de transcrição será o seu prompt personalizado
 
-#### 5. **Baixe os Resultados**
-   - Um arquivo `.rar` é gerado contendo as transcrições
-   - Formato: `nome_do_arquivo_transcrição.txt`
-   - Você receberá até 3 versões do texto (uma por modelo)
+#### 5. **Inicie o Processamento**
+   - Clique em "Gerar Transcrição".
+   - O sistema processa nos servidores do Hugging Face (ou localmente).
+   - Áudios longos são divididos em segmentos otimizados (~3 minutos).
+
+#### 6. **Baixe os Resultados**
+   - Um arquivo `.zip` (ou `.rar`) é gerado contendo as todas as transcrições e também é possível retornado um arquivo de transcrição `.txt` para cada arquivo a ser transcrito.
+   - Formato: `nome_do_arquivo_transcrição.txt`.
+   - Dentro do arquivo `.txt` terá todas as do texto (uma por modelo selecionado).
+
+#### 7. **Transcrição Final**
+   - Com os arquivos de transcrições em mãos, acesse uma IA (ChatGPT, Gemini, Meta, Claude ...) e carrege o arquivo de transcrição, o resultado será a transcrição final (A primeira linha do arquivo já é um prompt que pede para a IA fazer isso).
 
 ### Saída do Processamento
 
 O resultado final inclui:
-- ✅ Três versões transcrita (uma por modelo utilizado)
-- ✅ Arquivos em formato TXT legível
-- ✅ Tempo total de processamento
-- ✅ Estatísticas do áudio processado
+- ✅ N versões transcritas (uma transcrição por modelo utilizado).
+- ✅ Arquivos em formato TXT legível.
+- ✅ Tempo total de processamento.
+- ✅ Estatísticas do áudio processado.
 
-> **Dica:** Copie os textos transcritos para usar com outras ferramentas de IA como ChatGPT!
 
 ## 🐳 Docker
-
-### Build
-
 ```bash
 docker build -t llmt:latest .
-```
-
-### Executar
-
-```bash
 # Com porta padrão
 docker run -p 7860:7860 llmt:latest
 
 # Com volume persistente
 docker run -p 7860:7860 -v /caminho/local:/app/output llmt:latest
 ```
-
 ## 🤖 Modelos de Transcrição
 
 LLMT integra três modelos poderosos para máxima flexibilidade:
@@ -217,7 +239,7 @@ LLMT integra três modelos poderosos para máxima flexibilidade:
 - **Idiomas**: Português, Inglês e outros
 - **Melhor para**: Documentos profissionais, precisão crítica
 - **Recursos**: Marca palavras desconhecidas com [UNK]
-- **Tamanho**: Modelo completo (~200MB)
+- **Tamanho**: Modelo completo (~2.5GB)
 
 ### 3. **Google Speech Recognition**
 - **Velocidade**: 🔋 Média
@@ -235,7 +257,7 @@ LLMT integra três modelos poderosos para máxima flexibilidade:
 | Precisão | Moderada | Alta | Muito Alta |
 | Português | ✅ Bom | ✅ Excelente | ✅ Bom |
 | Offline | ✅ Sim | ✅ Sim | ❌ Não |
-| Custo | Gratuito | Gratuito | Gratuito |
+| Custo | Gratuito | Gratuito | Gratuito
 
 ## 📦 Instalação Manual
 
@@ -254,25 +276,22 @@ python3.14 -m pip install -r requirements.txt
 # 4. Baixar modelos Vosk manualmente (opcional)
 # Os modelos devem estar em Modelos/Vosk/
 ```
-
 ## 🔍 Resolução de Problemas
 
 ### Problema: ModuleNotFoundError
-```
+```text
 Solução: Certifique-se que PYTHONPATH está definido para o diretório src/
 ```
-
 ### Problema: Porta 7860 já em uso
-```bash
+```
 # Use uma porta diferente
 docker run -p 8000:7860 llmt:latest
 # ou
 GRADIO_SERVER_PORT=8000 python src/Gradio_Interface.py
 ```
-
 ### Problema: Erro ao processar áudio
-```
-Certifique-se que FFmpeg está instalado:
+```      
+#Certifique-se que FFmpeg está instalado:
 sudo apt-get install ffmpeg
 ```
 
@@ -288,13 +307,20 @@ sudo apt-get install ffmpeg
 
 ## 🤝 Contribuindo
 
-Para contribuir ao projeto:
+Contribuições são extremamente bem-vindas! Se você tem ideias para melhorar a ferramenta, otimizar o código ou adicionar novos recursos, sinta-se à vontade para participar.
 
-1. Faça um fork do repositório
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+### Como contribuir:
+
+1. Faça um **Fork** do repositório
+2. Crie uma branch para sua feature ou correção (`git checkout -b feature/MinhaFeatureIncrivel`)
+3. Faça o commit de suas mudanças com mensagens claras (`git commit -m 'Feat: Adiciona suporte a novo idioma'`)
+4. Faça o push para a branch (`git push origin feature/MinhaFeatureIncrivel`)
+5. Abra um **Pull Request** detalhando as alterações propostas
+
+### Diretrizes Adicionais:
+- **Testes:** Se possível, teste suas modificações localmente garantindo que a transcrição e a conversão de áudio/vídeo continuam funcionando perfeitamente.
+- **Issues:** Antes de iniciar uma grande alteração, abra uma *Issue* no repositório para discutirmos a abordagem.
+- *Nota:* No futuro, caso necessáiro posso adicionar um arquivo `CONTRIBUTING.md` dedicado com regras mais rígidas de estilo de código.
 
 ## 📄 Licença
 
@@ -302,7 +328,7 @@ Este projeto está sob a licença MIT. Veja o arquivo de licença para mais deta
 
 ## ❓ Dúvidas e Suporte
 
-Tem alguma dúvida ou encontrou um problema?
+Tem alguma dúvida, deseja entrar em contato ou encontrou um problema?
 
 **Entre em contato conosco:**
 - 📧 **E-mail:** [lucas.sabino.lana@gmail.com](mailto:lucas.sabino.lana@gmail.com)
@@ -318,7 +344,7 @@ R: Sim! LLMT é 100% gratuita. Não há custos ocultos ou limites de uso.
 R: Não. Os arquivos são processados temporariamente e descartados após o processamento. Nenhum arquivo é armazenado permanentemente.
 
 **P: Posso usar offline?**
-R: Sim, exceto pelo modelo Google Speech Recognition que requer conexão com a internet.
+R: Sim (ao rodar a aplicação localmente (claro), exceto pelo modelo Google Speech Recognition que requer conexão com a internet.
 
 **P: Qual é o tamanho máximo de arquivo?**
 R: Depende da sua conexão. Arquivos de várias horas funcionam bem.
@@ -332,7 +358,7 @@ R: Não! A ferramenta apenas gera novas transcrições e não modifica seus arqu
 - [Gradio](https://gradio.app/) - Framework para interfaces web intuitivas
 - [PyDub](https://github.com/jiaaro/pydub) - Processamento e manipulação de áudio
 - [Google Speech Recognition](https://cloud.google.com/speech-to-text) - API de reconhecimento de voz
-- [Google Colab](https://colab.research.google.com) - Plataforma de computação em nuvem
+- [Hugging Face Spaces](https://huggingface.co/spaces) - Plataforma de hospedagem de aplicações de IA
 
 ---
 
@@ -347,12 +373,12 @@ R: Não! A ferramenta apenas gera novas transcrições e não modifica seus arqu
 ---
 
 ## Próximos Passos:
-- Atualizar o read.me, disponibilizando o link para o Space no HuggingFace
-- Implementar um integração da saída (as transcrições) com uma LLM, possivelmente usando o n8n
+- Implementar uma integração da saída (as transcrições) com uma LLM, possivelmente usando o n8n
 
 **Desenvolvido por Lucas Fonseca Sabino Lana**
 
-**Última atualização**: Janeiro 2026
+**Última atualização**: Fevereiro 2026
 
-Para mais informações, visite o repositório no GitHub ou entre em contato pelo email fornecido.
->>>>>>> Stashed changes
+
+
+
