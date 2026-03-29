@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Força a saída de logs em tempo real (resolve seu problema anterior)
+# Força a saída de logs em tempo real
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
@@ -31,7 +31,6 @@ COPY --from=builder /install /usr/local
 
 # Copia os arquivos do projeto
 COPY src/ ./src/
-COPY Modelos/ ./Modelos/
 
 # Configurações de ambiente
 ENV PYTHONPATH="/app/src"
@@ -43,4 +42,4 @@ EXPOSE 7860
 # Garante que não existam arquivos .pyc antigos vindos da cópia
 RUN find . -type d -name "__pycache__" -exec rm -rf {} +
 
-CMD ["python", "src/Gradio_Interface.py"]
+CMD ["python", "src/main.py"]

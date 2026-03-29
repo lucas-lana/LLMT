@@ -1,12 +1,51 @@
+import urllib.request
+import zipfile
 import wave
 import json
+import os
 
 from vosk import Model, KaldiRecognizer
 import speech_recognition as sr
 from io import BytesIO
 
+
+MODELS = {
+    "small": {
+        "url": "https://alphacephei.com/vosk/models/vosk-model-small-pt-0.3.zip",
+        "path": "Modelos/Vosk/vosk-model-small-pt-0.3",
+        "folder_name": "vosk-model-small-pt-0.3"
+    },
+    "large": {
+        "url": "https://alphacephei.com/vosk/models/vosk-model-pt-fb-v0.1.1-20220516_2113.zip",
+        "path": "Modelos/Vosk/vosk-model-pt-fb-v0.1.1-20220516_2113",
+        "folder_name": "vosk-model-pt-fb-v0.1.1-20220516_2113"
+    }
+}
+
+def ensure_models_downloaded():
+    base_path = "Modelos/Vosk"
+    os.makedirs(base_path, exist_ok=True)
+    
+    for name, info in MODELS.items():
+        if not os.path.exists(info["path"]):
+            print(f"--- Baixando modelo {name.upper()} ({info['url'].split('/')[-1]})... ---")
+            zip_tmp = f"{name}_model.zip"
+            
+            # Download com feedback visual simples
+            urllib.request.urlretrieve(info["url"], zip_tmp)
+            
+            print(f"Extraindo {name}...")
+            with zipfile.ZipFile(zip_tmp, 'r') as zip_ref:
+                zip_ref.extractall(base_path)
+            
+            os.remove(zip_tmp)
+            print(f"--- Modelo {name} pronto! ---")
+        else:
+            print(f"Modelo {name} já existe localmente.")
+
+
 def vosk_rec_min(audio_file: BytesIO) -> str:
-    MODEL_PATH = "../Modelos/Vosk/vosk-model-small-pt-0.3"
+    MODEL_PATH = "Modelos/Vosk/vosk-model-small-pt-0.3"
 
     # Carregar o modelo
     model = Model(MODEL_PATH)
@@ -43,7 +82,7 @@ def vosk_rec_min(audio_file: BytesIO) -> str:
 
 def vosk_rec(audio_file: BytesIO) -> str:
     # Baixe o modelo para português em https://alphacephei.com/vosk/models
-    MODEL_PATH =  "../Modelos/Vosk/vosk-model-pt-fb-v0.1.1-20220516_2113"
+    MODEL_PATH =  "Modelos/Vosk/vosk-model-pt-fb-v0.1.1-20220516_2113"
 
     # Carregar o modelo
     model = Model(MODEL_PATH)
