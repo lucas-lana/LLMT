@@ -106,7 +106,7 @@ A aplicação estará disponível em http://localhost:7860
       sudo bash Install_Linux.sh
 
 #### Executar a aplicação:
-      python src/Gradio_Interface.py
+      python src/main.py
 
 ## 📋 Requisitos
 
